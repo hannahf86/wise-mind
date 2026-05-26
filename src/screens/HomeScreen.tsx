@@ -1,0 +1,459 @@
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  colours,
+  fonts,
+  fontSizes,
+  spacing,
+  radius,
+  minTouchTarget,
+} from "../theme/theme";
+
+export default function HomeScreen() {
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>S</Text>
+          </View>
+          <View>
+            <Text style={styles.greetingSub}>Good morning,</Text>
+            <Text style={styles.greetingName}>Sarah</Text>
+          </View>
+        </View>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.headerIcon}>
+            <Ionicons
+              name="notifications-outline"
+              size={22}
+              color="rgba(255,255,255,0.9)"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerIcon}>
+            <Ionicons
+              name="settings-outline"
+              size={22}
+              color="rgba(255,255,255,0.9)"
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Learning path card */}
+        <View style={[styles.card, { backgroundColor: colours.cardLearning }]}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="map-outline" size={14} color="#3d2d4a" />
+            <Text style={[styles.cardTitle, { color: "#3d2d4a" }]}>
+              Your learning path
+            </Text>
+          </View>
+          <View style={styles.lpItem}>
+            <View
+              style={[styles.lpIcon, { backgroundColor: colours.mindfulness }]}
+            >
+              <Ionicons name="leaf-outline" size={14} color={colours.white} />
+            </View>
+            <View style={styles.lpBody}>
+              <Text style={styles.lpName}>Mindfulness</Text>
+              <Text style={styles.lpSub}>Module 1 — everyone starts here</Text>
+              <View style={styles.lpBarBg}>
+                <View
+                  style={[
+                    styles.lpBar,
+                    { width: "1%", backgroundColor: colours.mindfulness },
+                  ]}
+                />
+              </View>
+            </View>
+            <TouchableOpacity style={styles.lpBadge}>
+              <Text
+                style={[styles.lpBadgeText, { color: colours.mindfulness }]}
+              >
+                Begin
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Favourite skills card */}
+        <View style={[styles.card, { backgroundColor: colours.cardSkills }]}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="star-outline" size={14} color="#2d5a52" />
+            <Text style={[styles.cardTitle, { color: "#2d5a52" }]}>
+              Favourite skills
+            </Text>
+          </View>
+          <View style={styles.welcomeBanner}>
+            <View style={styles.welcomeBannerTitleRow}>
+              <Ionicons name="bulb-outline" size={13} color={colours.teal} />
+              <Text style={styles.welcomeBannerTitle}>
+                We've started you off
+              </Text>
+            </View>
+            <Text style={styles.welcomeBannerText}>
+              STOP and TIPP are two of the most useful DBT skills to have right
+              away. Swap them out anytime.
+            </Text>
+          </View>
+          <View style={styles.favGrid}>
+            <TouchableOpacity style={styles.favChip}>
+              <Ionicons
+                name="hand-left-outline"
+                size={16}
+                color={colours.teal}
+              />
+              <Text style={styles.favChipName}>STOP</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.favChip}>
+              <Ionicons name="snow-outline" size={16} color={colours.teal} />
+              <Text style={styles.favChipName}>TIPP</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.favChip, styles.favChipEmpty]}>
+              <Ionicons
+                name="add-outline"
+                size={16}
+                color={colours.textPlaceholder}
+              />
+              <Text
+                style={[styles.favChipName, { color: colours.textPlaceholder }]}
+              >
+                Add skill
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.favChip, styles.favChipEmpty]}>
+              <Ionicons
+                name="add-outline"
+                size={16}
+                color={colours.textPlaceholder}
+              />
+              <Text
+                style={[styles.favChipName, { color: colours.textPlaceholder }]}
+              >
+                Add skill
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Mood card */}
+        <View style={[styles.card, { backgroundColor: colours.cardMood }]}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="happy-outline"
+              size={14}
+              color={colours.peachText}
+            />
+            <Text style={[styles.cardTitle, { color: colours.peachText }]}>
+              How are you feeling today?
+            </Text>
+          </View>
+          <View style={styles.moodRow}>
+            {[
+              { emoji: "😔", label: "Low" },
+              { emoji: "😐", label: "Okay" },
+              { emoji: "🙂", label: "Good" },
+              { emoji: "😊", label: "Great" },
+            ].map((mood) => (
+              <TouchableOpacity key={mood.label} style={styles.moodBtn}>
+                <Text style={styles.moodEmoji}>{mood.emoji}</Text>
+                <Text style={styles.moodLabel}>{mood.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.journalRow}>
+            <Text style={styles.journalPrompt}>Get it off your chest...</Text>
+            <View style={styles.journalLinkRow}>
+              <Ionicons name="journal-outline" size={14} color={colours.teal} />
+              <Text style={styles.journalLink}>Journal</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Community card */}
+        <View style={[styles.card, { backgroundColor: colours.cardCommunity }]}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="people-outline" size={14} color="#6b3518" />
+            <Text style={[styles.cardTitle, { color: "#6b3518" }]}>
+              Community
+            </Text>
+          </View>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              Community posts will appear here as people share their
+              experiences.
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colours.background,
+  },
+  header: {
+    backgroundColor: colours.teal,
+    paddingHorizontal: spacing.xl,
+    paddingTop: 52,
+    paddingBottom: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colours.peach,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.md,
+    color: colours.teal,
+    fontWeight: "700",
+  },
+  greetingSub: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: "rgba(255,255,255,0.8)",
+  },
+  greetingName: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.lg,
+    color: colours.white,
+    fontWeight: "700",
+  },
+  headerIcons: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  headerIcon: {
+    minHeight: minTouchTarget,
+    minWidth: minTouchTarget,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: spacing.lg,
+    gap: spacing.xl,
+    paddingBottom: 32,
+    flexGrow: 1,
+  },
+  card: {
+    borderRadius: radius.md,
+    padding: spacing.xl,
+  },
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  cardTitle: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.md,
+    fontWeight: "700",
+  },
+  lpItem: {
+    backgroundColor: colours.white,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  lpIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lpBody: {
+    flex: 1,
+  },
+  lpName: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.md,
+    color: colours.textDark,
+    fontWeight: "700",
+  },
+  lpSub: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.textMid,
+    marginTop: 1,
+  },
+  lpBarBg: {
+    height: 4,
+    backgroundColor: colours.borderLight,
+    borderRadius: 2,
+    marginTop: 5,
+  },
+  lpBar: {
+    height: 4,
+    borderRadius: 2,
+  },
+  lpBadge: {
+    borderRadius: 6,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderWidth: 0.5,
+    borderColor: colours.mindfulness,
+    backgroundColor: colours.white,
+    minHeight: minTouchTarget,
+    justifyContent: "center",
+  },
+  lpBadgeText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.xs,
+    fontWeight: "700",
+  },
+  welcomeBanner: {
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+    borderLeftWidth: 2.5,
+    borderLeftColor: colours.teal,
+    marginBottom: spacing.sm,
+  },
+  welcomeBannerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    marginBottom: 2,
+  },
+  welcomeBannerTitle: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.sm,
+    color: colours.teal,
+    fontWeight: "700",
+  },
+  welcomeBannerText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.tealDark,
+    lineHeight: 18,
+  },
+  favGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  favChip: {
+    backgroundColor: colours.white,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    width: "47%",
+    minHeight: minTouchTarget,
+    borderWidth: 0.5,
+    borderColor: colours.borderLight,
+  },
+  favChipEmpty: {
+    opacity: 0.4,
+    borderStyle: "dashed",
+  },
+  favChipName: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.sm,
+    color: colours.textDark,
+    fontWeight: "700",
+  },
+  moodRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  moodBtn: {
+    flex: 1,
+    backgroundColor: colours.white,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+    alignItems: "center",
+    minHeight: minTouchTarget,
+    justifyContent: "center",
+    gap: 2,
+  },
+  moodEmoji: {
+    fontSize: 20,
+  },
+  moodLabel: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.peachText,
+  },
+  divider: {
+    height: 0.5,
+    backgroundColor: "rgba(107,66,0,0.15)",
+    marginVertical: spacing.sm,
+  },
+  journalRow: {
+    backgroundColor: colours.white,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: minTouchTarget,
+  },
+  journalPrompt: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.md,
+    color: colours.peachText,
+    fontStyle: "italic",
+  },
+  journalLinkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  journalLink: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.sm,
+    color: colours.teal,
+    fontWeight: "700",
+  },
+  emptyState: {
+    backgroundColor: colours.white,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+    alignItems: "center",
+  },
+  emptyStateText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.md,
+    color: colours.textMid,
+    textAlign: "left",
+    lineHeight: 18,
+  },
+});
