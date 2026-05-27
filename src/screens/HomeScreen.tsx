@@ -26,7 +26,7 @@ export default function HomeScreen() {
           </View>
           <View>
             <Text style={styles.greetingSub}>Good morning,</Text>
-            <Text style={styles.greetingName}>Sarah</Text>
+            <Text style={styles.greetingName}>Hannah</Text>
           </View>
         </View>
         <View style={styles.headerIcons}>

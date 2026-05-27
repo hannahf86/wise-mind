@@ -2,6 +2,7 @@
   "expo": {
     "name": "wisemind2",
     "slug": "wisemind2",
+    "scheme": "wisemind",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,8 +27,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-font"
-    ]
+    "plugins": ["expo-font"]
   }
 }

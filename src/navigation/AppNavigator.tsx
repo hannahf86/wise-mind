@@ -1,10 +1,9 @@
-// 1. Imports
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { View, Text, StyleSheet } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { colours, fonts, fontSizes } from "../theme/theme";
 import { Ionicons } from "@expo/vector-icons";
-// import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../services/AuthContext";
 
 // Screens
 import HomeScreen from "../screens/HomeScreen";
@@ -12,21 +11,35 @@ import LearnScreen from "../screens/LearnScreen";
 import ToolkitScreen from "../screens/ToolkitScreen";
 import JournalScreen from "../screens/JournalScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-
-function PlaceholderScreen({ name }: { name: string }) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{name}</Text>
-    </View>
-  );
-}
+import SignInScreen from "../screens/auth/SignInScreen";
 
 const Tab = createBottomTabNavigator();
 
-// const insets = useSafeAreaInsets();
-
-// Main navigator function
 export default function AppNavigator() {
+  const { session, loading } = useAuth();
+
+  // Show spinner while checking auth state
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colours.background,
+        }}
+      >
+        <ActivityIndicator color={colours.teal} size="large" />
+      </View>
+    );
+  }
+
+  // Show sign in screen if not logged in
+  if (!session) {
+    return <SignInScreen />;
+  }
+
+  // Show main app if logged in
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -47,7 +60,7 @@ export default function AppNavigator() {
           },
           tabBarActiveTintColor: colours.teal,
           tabBarInactiveTintColor: colours.lightGrey,
-          tabBarIcon: ({ color, size }) => {
+          tabBarIcon: ({ color }) => {
             const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
               Home: "home-outline",
               Learn: "book-outline",
@@ -70,18 +83,3 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
-
-// Styles at the bottom
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    fontFamily: "AtkinsonHyperlegible",
-    fontSize: fontSizes.xxl,
-    color: colours.teal,
-  },
-});
