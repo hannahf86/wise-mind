@@ -15,17 +15,31 @@ import {
   minTouchTarget,
 } from "../theme/theme";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
 // Services
 import { logMood } from "../services/mood";
 import { startModule } from "../services/progress";
+import { getFavouriteSkills } from "../services/favourites";
 
 export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [moodSaved, setMoodSaved] = useState(false);
   const navigation = useNavigation();
+
+  const [favourites, setFavourites] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadFavourites();
+  }, []);
+
+  async function loadFavourites() {
+    const data = await getFavouriteSkills(
+      "99b6fc7e-93c5-4dfa-9192-25067d68fdff",
+    );
+    setFavourites(data);
+  }
 
   async function handleMoodTap(mood: string) {
     setSelectedMood(mood);
@@ -142,42 +156,46 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={styles.favGrid}>
-            <TouchableOpacity style={styles.favChip}>
-              <Ionicons
-                name="hand-left-outline"
-                size={16}
-                color={colours.teal}
-              />
-              <Text style={styles.favChipName}>STOP</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.favChip}>
-              <Ionicons name="snow-outline" size={16} color={colours.teal} />
-              <Text style={styles.favChipName}>TIPP</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.favChip, styles.favChipEmpty]}>
-              <Ionicons
-                name="add-outline"
-                size={16}
-                color={colours.textPlaceholder}
-              />
-              <Text
-                style={[styles.favChipName, { color: colours.textPlaceholder }]}
-              >
-                Add skill
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.favChip, styles.favChipEmpty]}>
-              <Ionicons
-                name="add-outline"
-                size={16}
-                color={colours.textPlaceholder}
-              />
-              <Text
-                style={[styles.favChipName, { color: colours.textPlaceholder }]}
-              >
-                Add skill
-              </Text>
-            </TouchableOpacity>
+            {favourites.length === 0 ? (
+              <View style={styles.favEmpty}>
+                <Text style={styles.favEmptyText}>
+                  No favourite skills yet — add some from the Toolkit!
+                </Text>
+              </View>
+            ) : (
+              <>
+                {favourites.map((fav) => (
+                  <TouchableOpacity key={fav.id} style={styles.favChip}>
+                    <Ionicons
+                      name={(fav.skills?.icon || "star-outline") as any}
+                      size={16}
+                      color={colours.teal}
+                    />
+                    <Text style={styles.favChipName}>{fav.skills?.name}</Text>
+                  </TouchableOpacity>
+                ))}
+                {favourites.length < 5 && (
+                  <TouchableOpacity
+                    style={[styles.favChip, styles.favChipEmpty]}
+                    onPress={() => navigation.navigate("Toolkit" as never)}
+                  >
+                    <Ionicons
+                      name="add-outline"
+                      size={16}
+                      color={colours.textPlaceholder}
+                    />
+                    <Text
+                      style={[
+                        styles.favChipName,
+                        { color: colours.textPlaceholder },
+                      ]}
+                    >
+                      Add skill
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
           </View>
         </View>
 
@@ -555,5 +573,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
+  },
+  favEmpty: {
+    width: "100%",
+    padding: spacing.md,
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderRadius: radius.sm,
+  },
+  favEmptyText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.tealDark,
+    lineHeight: 18,
   },
 });

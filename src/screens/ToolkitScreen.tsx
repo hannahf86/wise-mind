@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -14,8 +15,82 @@ import {
   radius,
   minTouchTarget,
 } from "../theme/theme";
+import {
+  getFavouriteSkills,
+  addFavouriteSkill,
+  removeFavouriteSkill,
+  getAllSkills,
+} from "../services/favourites";
+
+const DEV_USER_ID = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
+const MAX_FAVOURITES = 5;
 
 export default function ToolkitScreen() {
+  const [skills, setSkills] = useState<any[]>([]);
+  const [favourites, setFavourites] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("All");
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    const [skillsData, favsData] = await Promise.all([
+      getAllSkills(),
+      getFavouriteSkills(DEV_USER_ID),
+    ]);
+    setSkills(skillsData);
+    setFavourites(favsData);
+  }
+
+  function isFavourited(skillId: string) {
+    return favourites.some((f) => f.skill_id === skillId);
+  }
+
+  async function handleToggleFavourite(skillId: string) {
+    if (isFavourited(skillId)) {
+      await removeFavouriteSkill(DEV_USER_ID, skillId);
+      await loadData();
+      showFeedback("Removed from favourites");
+    } else {
+      const result = await addFavouriteSkill(DEV_USER_ID, skillId);
+      if (result.reason === "max_reached") {
+        showFeedback("You can only have 5 favourite skills — remove one first");
+      } else if (result.reason === "already_added") {
+        showFeedback("Already in your favourites");
+      } else {
+        await loadData();
+        showFeedback("Added to favourites");
+      }
+    }
+  }
+
+  function showFeedback(message: string) {
+    setFeedback(message);
+    setTimeout(() => setFeedback(null), 2500);
+  }
+
+  const tabs = [
+    "All",
+    "Mindfulness",
+    "Distress tol.",
+    "Emotion reg.",
+    "Interpersonal",
+  ];
+
+  const moduleNameToTab: Record<string, string> = {
+    Mindfulness: "Mindfulness",
+    "Distress Tolerance": "Distress tol.",
+    "Emotion Regulation": "Emotion reg.",
+    "Interpersonal Effectiveness": "Interpersonal",
+  };
+
+  const filteredSkills =
+    activeTab === "All"
+      ? skills
+      : skills.filter((s) => moduleNameToTab[s.modules?.name] === activeTab);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -31,6 +106,13 @@ export default function ToolkitScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Feedback banner */}
+      {feedback && (
+        <View style={styles.feedbackBanner}>
+          <Text style={styles.feedbackText}>{feedback}</Text>
+        </View>
+      )}
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -38,67 +120,69 @@ export default function ToolkitScreen() {
       >
         {/* Favourite skills */}
         <View style={[styles.section, { backgroundColor: colours.cardSkills }]}>
-          <Text style={[styles.sectionTitle, { color: "#2d5a52" }]}>
-            <Ionicons name="star-outline" size={13} color="#2d5a52" /> Favourite
-            skills
-          </Text>
+          <View style={styles.sectionTitleRow}>
+            <Ionicons name="star-outline" size={13} color="#2d5a52" />
+            <Text style={[styles.sectionTitle, { color: "#2d5a52" }]}>
+              Favourite skills
+            </Text>
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.skillsScroll}
           >
-            {[
-              {
-                icon: "hand-left-outline",
-                name: "STOP",
-                module: "Distress tol.",
-              },
-              { icon: "snow-outline", name: "TIPP", module: "Distress tol." },
-              {
-                icon: "wind-outline",
-                name: "Box breathing",
-                module: "Mindfulness",
-              },
-              { icon: "eye-outline", name: "5-4-3-2-1", module: "Mindfulness" },
-            ].map((skill) => (
-              <TouchableOpacity key={skill.name} style={styles.skillChip}>
-                <Ionicons
-                  name={skill.icon as any}
-                  size={20}
-                  color={colours.teal}
-                />
-                <Text style={styles.skillChipName}>{skill.name}</Text>
-                <Text style={styles.skillChipModule}>{skill.module}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={[styles.skillChip, styles.skillChipEmpty]}>
-              <Ionicons
-                name="add-outline"
-                size={20}
-                color={colours.lightGrey}
-              />
-              <Text
-                style={[
-                  styles.skillChipName,
-                  { color: colours.lightGrey, fontWeight: "400" },
-                ]}
+            {favourites.length === 0 ? (
+              <View style={styles.favEmpty}>
+                <Text style={styles.favEmptyText}>
+                  Add skills from the library below
+                </Text>
+              </View>
+            ) : (
+              favourites.map((fav) => (
+                <TouchableOpacity key={fav.id} style={styles.skillChip}>
+                  <Ionicons
+                    name={(fav.skills?.icon || "star-outline") as any}
+                    size={20}
+                    color={colours.teal}
+                  />
+                  <Text style={styles.skillChipName}>{fav.skills?.name}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+            {favourites.length < MAX_FAVOURITES && (
+              <TouchableOpacity
+                style={[styles.skillChip, styles.skillChipEmpty]}
               >
-                Add skill
-              </Text>
-            </TouchableOpacity>
+                <Ionicons
+                  name="add-outline"
+                  size={20}
+                  color={colours.lightGrey}
+                />
+                <Text
+                  style={[
+                    styles.skillChipName,
+                    { color: colours.lightGrey, fontWeight: "400" },
+                  ]}
+                >
+                  Add skill
+                </Text>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </View>
 
         {/* Get out of that mood */}
         <View style={[styles.section, { backgroundColor: colours.cardMood }]}>
-          <Text style={[styles.sectionTitle, { color: colours.peachText }]}>
+          <View style={styles.sectionTitleRow}>
             <Ionicons
               name="happy-outline"
               size={13}
               color={colours.peachText}
-            />{" "}
-            Get out of that mood
-          </Text>
+            />
+            <Text style={[styles.sectionTitle, { color: colours.peachText }]}>
+              Get out of that mood
+            </Text>
+          </View>
           <View style={styles.moodGrid}>
             {[
               {
@@ -152,10 +236,12 @@ export default function ToolkitScreen() {
         <View
           style={[styles.section, { backgroundColor: colours.cardLearning }]}
         >
-          <Text style={[styles.sectionTitle, { color: "#3d2d4a" }]}>
-            <Ionicons name="library-outline" size={13} color="#3d2d4a" /> DBT
-            skills library
-          </Text>
+          <View style={styles.sectionTitleRow}>
+            <Ionicons name="library-outline" size={13} color="#3d2d4a" />
+            <Text style={[styles.sectionTitle, { color: "#3d2d4a" }]}>
+              DBT skills library
+            </Text>
+          </View>
 
           {/* Module filter tabs */}
           <ScrollView
@@ -163,21 +249,19 @@ export default function ToolkitScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabsScroll}
           >
-            {[
-              "All",
-              "Mindfulness",
-              "Distress tol.",
-              "Emotion reg.",
-              "Interpersonal",
-            ].map((tab, i) => (
+            {tabs.map((tab) => (
               <TouchableOpacity
                 key={tab}
-                style={[styles.moduleTab, i === 0 && styles.moduleTabActive]}
+                style={[
+                  styles.moduleTab,
+                  activeTab === tab && styles.moduleTabActive,
+                ]}
+                onPress={() => setActiveTab(tab)}
               >
                 <Text
                   style={[
                     styles.moduleTabText,
-                    i === 0 && styles.moduleTabTextActive,
+                    activeTab === tab && styles.moduleTabTextActive,
                   ]}
                 >
                   {tab}
@@ -188,75 +272,51 @@ export default function ToolkitScreen() {
 
           {/* Skills list */}
           <View style={styles.skillsList}>
-            {[
-              {
-                icon: "hand-left-outline",
-                name: "STOP",
-                desc: "Pause before you react",
-                colour: colours.distressTolerance,
-                saved: true,
-                locked: false,
-              },
-              {
-                icon: "leaf-outline",
-                name: "Wise Mind",
-                desc: "Finding your balanced perspective",
-                colour: colours.mindfulness,
-                saved: false,
-                locked: false,
-              },
-              {
-                icon: "sync-outline",
-                name: "Opposite Action",
-                desc: "Unlocks in Emotion Regulation",
-                colour: colours.lightGrey,
-                saved: false,
-                locked: true,
-              },
-            ].map((skill) => (
-              <View
-                key={skill.name}
-                style={[
-                  styles.skillItem,
-                  skill.locked && styles.skillItemLocked,
-                ]}
-              >
-                <View
-                  style={[
-                    styles.skillItemIcon,
-                    { backgroundColor: skill.colour },
-                  ]}
-                >
-                  <Ionicons
-                    name={skill.icon as any}
-                    size={14}
-                    color={colours.white}
-                  />
-                </View>
-                <View style={styles.skillItemBody}>
-                  <Text style={styles.skillItemName}>{skill.name}</Text>
-                  <Text style={styles.skillItemDesc}>{skill.desc}</Text>
-                </View>
-                {skill.locked ? (
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={16}
-                    color={colours.lightGrey}
-                  />
-                ) : (
-                  <Ionicons
-                    name={skill.saved ? "star" : "star-outline"}
-                    size={18}
-                    color={skill.saved ? colours.teal : colours.lightGrey}
-                  />
-                )}
+            {filteredSkills.length === 0 ? (
+              <View style={styles.emptySkills}>
+                <Text style={styles.emptySkillsText}>No skills yet</Text>
               </View>
-            ))}
+            ) : (
+              filteredSkills.map((skill) => (
+                <View key={skill.id} style={styles.skillItem}>
+                  <View
+                    style={[
+                      styles.skillItemIcon,
+                      {
+                        backgroundColor: skill.modules?.colour || colours.teal,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name={(skill.icon || "star-outline") as any}
+                      size={14}
+                      color={colours.white}
+                    />
+                  </View>
+                  <View style={styles.skillItemBody}>
+                    <Text style={styles.skillItemName}>{skill.name}</Text>
+                    <Text style={styles.skillItemDesc}>
+                      {skill.description}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.favBtn}
+                    onPress={() => handleToggleFavourite(skill.id)}
+                  >
+                    <Ionicons
+                      name={isFavourited(skill.id) ? "star" : "star-outline"}
+                      size={18}
+                      color={
+                        isFavourited(skill.id)
+                          ? colours.teal
+                          : colours.lightGrey
+                      }
+                    />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
           </View>
-
-          <TouchableOpacity style={styles.seeAllBtn}>
-            <Text style={styles.seeAllText}>See all skills →</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -301,6 +361,19 @@ const styles = StyleSheet.create({
     color: colours.white,
     fontWeight: "700",
   },
+  feedbackBanner: {
+    backgroundColor: colours.tealLight,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colours.borderLight,
+  },
+  feedbackText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: colours.tealDark,
+    textAlign: "center",
+  },
   scroll: {
     flex: 1,
   },
@@ -313,11 +386,16 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.lg,
   },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
   sectionTitle: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.md,
     fontWeight: "700",
-    marginBottom: spacing.md,
   },
   skillsScroll: {
     gap: spacing.sm,
@@ -346,11 +424,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
   },
-  skillChipModule: {
+  favEmpty: {
+    padding: spacing.md,
+    justifyContent: "center",
+  },
+  favEmptyText: {
     fontFamily: fonts.body,
-    fontSize: 9,
-    color: colours.textMid,
-    textAlign: "center",
+    fontSize: fontSizes.xs,
+    color: colours.tealDark,
   },
   moodGrid: {
     flexDirection: "row",
@@ -416,7 +497,6 @@ const styles = StyleSheet.create({
   },
   skillsList: {
     gap: spacing.sm,
-    marginBottom: spacing.sm,
   },
   skillItem: {
     backgroundColor: colours.white,
@@ -428,9 +508,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colours.borderLight,
     minHeight: minTouchTarget,
-  },
-  skillItemLocked: {
-    opacity: 0.5,
   },
   skillItemIcon: {
     width: 28,
@@ -455,24 +532,19 @@ const styles = StyleSheet.create({
     color: colours.textMid,
     marginTop: 1,
   },
-  seeAllBtn: {
-    backgroundColor: "rgba(255,255,255,0.4)",
-    borderRadius: radius.sm,
-    padding: spacing.md,
+  favBtn: {
+    width: minTouchTarget,
+    height: minTouchTarget,
     alignItems: "center",
-    minHeight: minTouchTarget,
     justifyContent: "center",
   },
-  seeAllText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.md,
-    color: "#3d2d4a",
-    fontWeight: "700",
-  },
-  sectionTitleRow: {
-    flexDirection: "row",
+  emptySkills: {
+    padding: spacing.md,
     alignItems: "center",
-    gap: spacing.xs,
-    marginBottom: spacing.md,
+  },
+  emptySkillsText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: colours.textMid,
   },
 });
