@@ -10,12 +10,14 @@ export async function saveJournalEntry(
   entryType: EntryType,
   content: string,
   sharedWithTherapist: boolean = false,
+  title?: string,
 ) {
   const { data, error } = await supabase.from("journal_entries").insert({
     user_id: userId,
     entry_type: entryType,
     content,
-    shared_with_therapist: sharedWithTherapist,
+    share_with_therapist: sharedWithTherapist,
+    ...(title && { title }),
   });
 
   if (error) {

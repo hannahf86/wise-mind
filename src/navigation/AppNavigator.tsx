@@ -11,6 +11,7 @@ import ToolkitScreen from "../screens/ToolkitScreen";
 import JournalScreen from "../screens/JournalScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
+import DistractMeScreen from "../screens/DistractMeScreen";
 
 const Tab = createBottomTabNavigator();
 
