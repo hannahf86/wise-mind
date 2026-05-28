@@ -16,6 +16,7 @@ import {
 } from "../theme/theme";
 
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 // Services
 import { logMood } from "../services/mood";
@@ -24,6 +25,7 @@ import { startModule } from "../services/progress";
 export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [moodSaved, setMoodSaved] = useState(false);
+  const navigation = useNavigation();
 
   async function handleMoodTap(mood: string) {
     setSelectedMood(mood);
@@ -39,6 +41,9 @@ export default function HomeScreen() {
     const userId = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
     const moduleId = "c6eabef4-d24e-4fee-a2fa-812b6dc53add";
     const result = await startModule(userId, moduleId);
+    console.log("handleBegin result:", result);
+    console.log("Attempting navigation to Learn");
+    navigation.navigate("Learn" as never);
     if (result) {
       console.log("Module started!");
     }
@@ -107,7 +112,6 @@ export default function HomeScreen() {
               </View>
             </View>
             <TouchableOpacity style={styles.lpBadge} onPress={handleBegin}>
-              {" "}
               <Text
                 style={[styles.lpBadgeText, { color: colours.mindfulness }]}
               >
@@ -219,6 +223,35 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* Distract Me card */}
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: colours.skyLight }]}
+          onPress={() => navigation.navigate("Toolkit" as never)}
+        >
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="game-controller-outline"
+              size={14}
+              color={colours.skyText}
+            />
+            <Text style={[styles.cardTitle, { color: colours.skyText }]}>
+              Distract Me
+            </Text>{" "}
+          </View>
+          <Text style={styles.distractDesc}>
+            Feeling overwhelmed? Pick something you love and we'll talk about
+            it.
+          </Text>
+          <View style={styles.distractBtnRow}>
+            <Text style={styles.distractBtnText}>Let's go</Text>
+            <Ionicons
+              name="arrow-forward-outline"
+              size={14}
+              color={colours.skyText}
+            />
+          </View>
+        </TouchableOpacity>
 
         {/* Community card */}
         <View style={[styles.card, { backgroundColor: colours.cardCommunity }]}>
@@ -504,5 +537,23 @@ const styles = StyleSheet.create({
     color: colours.teal,
     textAlign: "center",
     marginTop: spacing.xs,
+  },
+  distractDesc: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: colours.skyText,
+    lineHeight: 20,
+    marginBottom: spacing.md,
+  },
+  distractBtnText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.sm,
+    color: colours.skyText,
+    fontWeight: "700",
+  },
+  distractBtnRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
 });

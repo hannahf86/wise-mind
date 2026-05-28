@@ -11,6 +11,7 @@ export async function saveJournalEntry(
   content: string,
   sharedWithTherapist: boolean = false,
   title?: string,
+  lessonId?: string,
 ) {
   const { data, error } = await supabase.from("journal_entries").insert({
     user_id: userId,
@@ -18,6 +19,7 @@ export async function saveJournalEntry(
     content,
     share_with_therapist: sharedWithTherapist,
     ...(title && { title }),
+    ...(lessonId && { lesson_id: lessonId }),
   });
 
   if (error) {
@@ -40,4 +42,39 @@ export async function getJournalEntries(userId: string) {
     return [];
   }
   return data;
+}
+
+export async function updateJournalEntry(
+  entryId: string,
+  content: string,
+  sharedWithTherapist: boolean,
+  title?: string,
+) {
+  const { data, error } = await supabase
+    .from("journal_entries")
+    .update({
+      content,
+      share_with_therapist: sharedWithTherapist,
+      ...(title !== undefined && { title }),
+    })
+    .eq("id", entryId);
+
+  if (error) {
+    console.log("Update journal error:", error.message);
+    return false;
+  }
+  return true;
+}
+
+export async function deleteJournalEntry(entryId: string) {
+  const { data, error } = await supabase
+    .from("journal_entries")
+    .delete()
+    .eq("id", entryId);
+
+  if (error) {
+    console.log("Delete journal error:", error.message);
+    return false;
+  }
+  return true;
 }

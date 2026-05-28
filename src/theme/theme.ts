@@ -48,6 +48,10 @@ export const colours = {
   // Neutral
   lightGrey: "#c4c4c4",
   mist: "#dce5e1",
+
+  // Blues
+  skyLight: "#ddeef7",
+  skyText: "#2a5f7a",
 };
 
 export const fonts = {

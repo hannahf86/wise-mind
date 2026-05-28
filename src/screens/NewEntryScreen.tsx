@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,7 +19,11 @@ import {
   radius,
   minTouchTarget,
 } from "../theme/theme";
-import { saveJournalEntry } from "../services/journal";
+import {
+  saveJournalEntry,
+  updateJournalEntry,
+  deleteJournalEntry,
+} from "../services/journal";
 
 const DEV_USER_ID = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
 
@@ -31,13 +36,6 @@ const ENTRY_TYPES: {
   colour: string;
   prompt: string;
 }[] = [
-  {
-    type: "diary_card",
-    label: "Diary Card",
-    icon: "clipboard-outline",
-    colour: colours.emotionRegulation,
-    prompt: "Which DBT skills did you use today? How did they help?",
-  },
   {
     type: "reflection",
     label: "Reflection",
@@ -53,10 +51,16 @@ const ENTRY_TYPES: {
     colour: colours.distressTolerance,
     prompt: "What three things are you grateful for today, however small?",
   },
-
+  {
+    type: "diary_card",
+    label: "Diary card",
+    icon: "clipboard-outline",
+    colour: colours.emotionRegulation,
+    prompt: "Which DBT skills did you use today? How did they help?",
+  },
   {
     type: "sos_log",
-    label: "SOS Log",
+    label: "SOS log",
     icon: "shield-outline",
     colour: colours.interpersonal,
     prompt: "What happened? What skills did you use to get through it?",
@@ -65,36 +69,79 @@ const ENTRY_TYPES: {
 
 type Props = {
   onClose: () => void;
+  existingEntry?: {
+    id: string;
+    entry_type: string;
+    title?: string;
+    content: string;
+    share_with_therapist: boolean;
+  };
 };
 
-export default function NewEntryScreen({ onClose }: Props) {
-  const [selectedType, setSelectedType] = useState<EntryType | null>(null);
-  const [content, setContent] = useState("");
-  const [sharedWithTherapist, setSharedWithTherapist] = useState(false);
+export default function NewEntryScreen({ onClose, existingEntry }: Props) {
+  const isEditing = !!existingEntry;
+
+  const [selectedType, setSelectedType] = useState<EntryType | null>(
+    (existingEntry?.entry_type as EntryType) || null,
+  );
+  const [title, setTitle] = useState(existingEntry?.title || "");
+  const [content, setContent] = useState(existingEntry?.content || "");
+  const [sharedWithTherapist, setSharedWithTherapist] = useState(
+    existingEntry?.share_with_therapist || false,
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [title, setTitle] = useState("");
+  const [categoryError, setCategoryError] = useState(false);
 
   const currentType = ENTRY_TYPES.find((t) => t.type === selectedType);
 
   async function handleSave() {
     if (!selectedType || !content.trim()) return;
     setSaving(true);
-    const result = await saveJournalEntry(
-      DEV_USER_ID,
-      selectedType,
-      content.trim(),
-      sharedWithTherapist,
-      title.trim() || undefined,
-    );
+
+    let result;
+    if (isEditing && existingEntry) {
+      result = await updateJournalEntry(
+        existingEntry.id,
+        content.trim(),
+        sharedWithTherapist,
+        title.trim() || undefined,
+      );
+    } else {
+      result = await saveJournalEntry(
+        DEV_USER_ID,
+        selectedType,
+        content.trim(),
+        sharedWithTherapist,
+        title.trim() || undefined,
+      );
+    }
+
     setSaving(false);
     if (result) {
       setSaved(true);
-      // Show 'saved' state briefly then close
-      setTimeout(() => {
-        onClose();
-      }, 1500);
+      setTimeout(() => onClose(), 1500);
     }
+  }
+
+  function handleDelete() {
+    Alert.alert(
+      "Delete entry",
+      "Are you sure you want to delete this entry? This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            if (existingEntry) {
+              await deleteJournalEntry(existingEntry.id);
+              onClose();
+            }
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -107,9 +154,9 @@ export default function NewEntryScreen({ onClose }: Props) {
         <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
           <Ionicons name="close-outline" size={24} color={colours.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New entry</Text>
-
-        {/* Save button */}
+        <Text style={styles.headerTitle}>
+          {isEditing ? "Edit entry" : "New entry"}
+        </Text>
         <TouchableOpacity
           style={[
             styles.saveBtn,
@@ -141,10 +188,18 @@ export default function NewEntryScreen({ onClose }: Props) {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Title input */}
+        <TextInput
+          style={styles.titleInput}
+          placeholder="Entry title (optional)"
+          placeholderTextColor={colours.textPlaceholder}
+          value={title}
+          onChangeText={setTitle}
+          maxLength={100}
+        />
+
         {/* Entry type picker */}
-        <Text style={styles.sectionLabel}>
-          Select a category before writing
-        </Text>
+        <Text style={styles.sectionLabel}>What kind of entry is this?</Text>
         <View style={styles.typeGrid}>
           {ENTRY_TYPES.map((type) => (
             <TouchableOpacity
@@ -157,6 +212,7 @@ export default function NewEntryScreen({ onClose }: Props) {
                 },
               ]}
               onPress={() => setSelectedType(type.type)}
+              disabled={isEditing}
             >
               <Ionicons
                 name={type.icon}
@@ -177,13 +233,9 @@ export default function NewEntryScreen({ onClose }: Props) {
           ))}
         </View>
 
-        {/* Title input */}
-        <TextInput
-          style={styles.titleInput}
-          placeholder="Entry title"
-          value={title}
-          onChangeText={setTitle}
-        />
+        <Text style={styles.typeHint}>
+          Choose a category before writing your entry
+        </Text>
 
         {/* Prompt */}
         {currentType && (
@@ -195,20 +247,31 @@ export default function NewEntryScreen({ onClose }: Props) {
 
         {/* Text input */}
         <TextInput
-          style={styles.textInput}
+          style={[styles.textInput, categoryError && styles.textInputError]}
           placeholder={
             selectedType
               ? "Start writing..."
-              : "Choose an entry type above to get started"
+              : "Choose a category above to get started"
           }
           placeholderTextColor={colours.textPlaceholder}
           value={content}
           onChangeText={setContent}
           multiline
-          autoFocus={!!selectedType}
           editable={!!selectedType}
           textAlignVertical="top"
+          onPressIn={() => {
+            if (!selectedType) {
+              setCategoryError(true);
+              setTimeout(() => setCategoryError(false), 2000);
+            }
+          }}
         />
+
+        {categoryError && (
+          <Text style={styles.categoryErrorText}>
+            Please select a category above before writing
+          </Text>
+        )}
 
         {/* Share with therapist */}
         <TouchableOpacity
@@ -237,6 +300,14 @@ export default function NewEntryScreen({ onClose }: Props) {
             />
           </View>
         </TouchableOpacity>
+
+        {/* Delete button — only shown when editing */}
+        {isEditing && (
+          <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={16} color={colours.danger} />
+            <Text style={styles.deleteBtnText}>Delete entry</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -279,11 +350,22 @@ const styles = StyleSheet.create({
   saveBtnDisabled: {
     opacity: 0.4,
   },
+  saveBtnSaved: {
+    backgroundColor: colours.white,
+  },
+  saveBtnInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   saveBtnText: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.sm,
     color: colours.white,
     fontWeight: "700",
+  },
+  saveBtnTextSaved: {
+    color: colours.teal,
   },
   scroll: {
     flex: 1,
@@ -292,6 +374,18 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     gap: spacing.lg,
     paddingBottom: 48,
+  },
+  titleInput: {
+    backgroundColor: colours.white,
+    borderRadius: radius.sm,
+    borderWidth: 0.5,
+    borderColor: colours.borderLight,
+    padding: spacing.lg,
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.lg,
+    color: colours.textDark,
+    minHeight: minTouchTarget,
+    fontWeight: "700",
   },
   sectionLabel: {
     fontFamily: fonts.heading,
@@ -322,6 +416,12 @@ const styles = StyleSheet.create({
     color: colours.textMid,
     fontWeight: "700",
   },
+  typeHint: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.textMid,
+    marginTop: -spacing.xs,
+  },
   promptBanner: {
     backgroundColor: colours.tealLight,
     borderRadius: radius.sm,
@@ -350,6 +450,16 @@ const styles = StyleSheet.create({
     color: colours.textDark,
     lineHeight: 24,
     minHeight: 200,
+  },
+  textInputError: {
+    borderColor: colours.warning,
+    borderWidth: 1.5,
+  },
+  categoryErrorText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.warning,
+    marginTop: -spacing.xs,
   },
   shareRow: {
     backgroundColor: colours.white,
@@ -400,33 +510,22 @@ const styles = StyleSheet.create({
   toggleThumbOn: {
     alignSelf: "flex-end",
   },
-  saveBtnSaved: {
-    backgroundColor: colours.white,
-  },
-  saveBtnInner: {
+  deleteBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-  },
-  saveBtnTextSaved: {
-    color: colours.teal,
-  },
-  typeHint: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.xs,
-    color: colours.textMid,
-    marginTop: -spacing.xs,
-  },
-  titleInput: {
-    backgroundColor: colours.white,
-    borderRadius: radius.sm,
-    borderWidth: 0.5,
-    borderColor: colours.borderLight,
+    justifyContent: "center",
+    gap: spacing.sm,
     padding: spacing.lg,
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.lg,
-    color: colours.textDark,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colours.dangerLight,
+    backgroundColor: colours.dangerLight,
     minHeight: minTouchTarget,
+  },
+  deleteBtnText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.sm,
+    color: colours.danger,
     fontWeight: "700",
   },
 });

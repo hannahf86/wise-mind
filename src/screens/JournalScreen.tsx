@@ -5,9 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { useEffect, useState } from "react";
-import { getJournalEntries } from "../services/journal";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -17,16 +17,14 @@ import {
   radius,
   minTouchTarget,
 } from "../theme/theme";
-import { saveJournalEntry } from "../services/journal";
-import { Modal } from "react-native";
+import { getJournalEntries } from "../services/journal";
 import NewEntryScreen from "./NewEntryScreen";
 
 export default function JournalScreen() {
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [entries, setEntries] = useState<any[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
+  const [selectedEntry, setSelectedEntry] = useState<any>(null);
 
   async function loadEntries() {
     const data = await getJournalEntries(
@@ -39,20 +37,6 @@ export default function JournalScreen() {
   useEffect(() => {
     loadEntries();
   }, []);
-
-  async function handleNewEntry(
-    entryType: "reflection" | "diary_card" | "sos_log" | "gratitude",
-    content: string,
-  ) {
-    setSaving(true);
-    const userId = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
-    const result = await saveJournalEntry(userId, entryType, content);
-    setSaving(false);
-    if (result) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }
-  }
 
   function entryColour(type: string) {
     switch (type) {
@@ -69,7 +53,6 @@ export default function JournalScreen() {
     }
   }
 
-  // Helpers for entry icons and labels based on type
   function entryIcon(type: string): keyof typeof Ionicons.glyphMap {
     switch (type) {
       case "reflection":
@@ -114,17 +97,31 @@ export default function JournalScreen() {
           }}
         />
       </Modal>
+      <Modal
+        visible={!!selectedEntry}
+        animationType="slide"
+        onRequestClose={() => setSelectedEntry(null)}
+      >
+        {selectedEntry && (
+          <NewEntryScreen
+            existingEntry={selectedEntry}
+            onClose={() => {
+              setSelectedEntry(null);
+              loadEntries();
+            }}
+          />
+        )}
+      </Modal>
+
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.headerTitle}>Journal</Text>
-            // New button in header
             <TouchableOpacity
               style={styles.newEntryBtn}
               onPress={() => setShowNewEntry(true)}
             >
-              {" "}
               <Ionicons name="pencil-outline" size={14} color={colours.white} />
               <Text style={styles.newEntryText}>New</Text>
             </TouchableOpacity>
@@ -209,7 +206,7 @@ export default function JournalScreen() {
             )}
           </ScrollView>
 
-          {/* Today */}
+          {/* Entries */}
           {loadingEntries ? (
             <ActivityIndicator color={colours.teal} size="small" />
           ) : entries.length === 0 ? (
@@ -226,7 +223,11 @@ export default function JournalScreen() {
             </View>
           ) : (
             entries.map((entry) => (
-              <TouchableOpacity key={entry.id} style={styles.entryCard}>
+              <TouchableOpacity
+                key={entry.id}
+                style={styles.entryCard}
+                onPress={() => setSelectedEntry(entry)}
+              >
                 <View style={styles.entryTop}>
                   <View
                     style={[
@@ -288,137 +289,6 @@ export default function JournalScreen() {
               </TouchableOpacity>
             ))
           )}
-
-          {/* Diary card entry */}
-          <TouchableOpacity style={styles.entryCard}>
-            <View style={styles.entryTop}>
-              <View
-                style={[
-                  styles.entryIcon,
-                  { backgroundColor: colours.cardLearning },
-                ]}
-              >
-                <Ionicons
-                  name="clipboard-outline"
-                  size={14}
-                  color={colours.white}
-                />
-              </View>
-              <View style={styles.entryHeader}>
-                <Text style={styles.entryTitle}>Daily diary card</Text>
-                <View style={styles.entryMeta}>
-                  <Text style={styles.entryMetaText}>Skills used today</Text>
-                  <View style={styles.entryMetaDot} />
-                  <Text style={styles.entryTime}>8:30 am</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.diarySkills}>
-              <View style={styles.diarySkill}>
-                <Ionicons name="checkmark" size={12} color={colours.teal} />
-                <Text style={styles.diarySkillText}>
-                  STOP — before a difficult email
-                </Text>
-              </View>
-              <View style={styles.diarySkill}>
-                <Ionicons name="checkmark" size={12} color={colours.teal} />
-                <Text style={styles.diarySkillText}>
-                  Box breathing — on the bus
-                </Text>
-              </View>
-            </View>
-            <View style={styles.entryTags}>
-              <View style={styles.sharedBadge}>
-                <Ionicons
-                  name="medical-outline"
-                  size={10}
-                  color={colours.teal}
-                />
-                <Text style={styles.sharedBadgeText}>Therapist</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Mood entry */}
-          <TouchableOpacity style={styles.entryCard}>
-            <View style={styles.entryTop}>
-              <View
-                style={[
-                  styles.entryIcon,
-                  { backgroundColor: colours.cardMood },
-                ]}
-              >
-                <Ionicons
-                  name="happy-outline"
-                  size={14}
-                  color={colours.peachText}
-                />
-              </View>
-              <View style={styles.entryHeader}>
-                <Text style={styles.entryTitle}>Mood check-in</Text>
-                <View style={styles.entryMeta}>
-                  <Text style={styles.entryTime}>8:14 am</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.moodEntry}>
-              <Text style={styles.moodEntryEmoji}>🙂</Text>
-              <Text style={styles.moodEntryText}>Good</Text>
-              <Text style={styles.moodEntryTime}>8:14 am</Text>
-            </View>
-            <View style={styles.entryTags}>
-              <View style={styles.privateBadge}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={10}
-                  color={colours.lightGrey}
-                />
-                <Text style={styles.privateBadgeText}>Private</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Yesterday */}
-          <Text style={styles.groupLabel}>Yesterday</Text>
-
-          {/* Free write entry */}
-          <TouchableOpacity style={styles.entryCard}>
-            <View style={styles.entryTop}>
-              <View
-                style={[
-                  styles.entryIcon,
-                  { backgroundColor: colours.cardCommunity },
-                ]}
-              >
-                <Ionicons name="create-outline" size={14} color="#6b3518" />
-              </View>
-              <View style={styles.entryHeader}>
-                <Text style={styles.entryTitle}>Hard day at work</Text>
-                <View style={styles.entryMeta}>
-                  <Text style={styles.entryMetaText}>Free write</Text>
-                  <View style={styles.entryMetaDot} />
-                  <Text style={styles.entryTime}>8:41 pm</Text>
-                </View>
-              </View>
-            </View>
-            <Text style={styles.entryPreview} numberOfLines={2}>
-              Today was genuinely tough. I kept catching myself
-              catastrophising...
-            </Text>
-            <View style={styles.entryTags}>
-              <View style={styles.privateBadge}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={10}
-                  color={colours.lightGrey}
-                />
-                <Text style={styles.privateBadgeText}>Private</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Save confirmation */}
-          {saved && <Text style={styles.savedText}>Entry saved ✓</Text>}
         </ScrollView>
       </View>
     </>
@@ -581,13 +451,21 @@ const styles = StyleSheet.create({
   filterPillTextActive: {
     color: colours.white,
   },
-  groupLabel: {
+  emptyJournal: {
+    alignItems: "center",
+    paddingVertical: spacing.xxl,
+    gap: spacing.sm,
+  },
+  emptyJournalText: {
     fontFamily: fonts.heading,
-    fontSize: fontSizes.xs,
+    fontSize: fontSizes.lg,
     color: colours.textMid,
     fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+  },
+  emptyJournalSub: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: colours.textLight,
   },
   entryCard: {
     backgroundColor: colours.white,
@@ -655,16 +533,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
   },
-  entryTag: {
-    borderRadius: 4,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-  },
-  entryTagText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.xs,
-    fontWeight: "700",
-  },
   sharedBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -696,79 +564,5 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     color: colours.lightGrey,
     fontWeight: "700",
-  },
-  diarySkills: {
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
-  },
-  diarySkill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  diarySkillText: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.sm,
-    color: colours.textDark,
-  },
-  moodEntry: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  moodEntryEmoji: {
-    fontSize: 16,
-  },
-  moodEntryText: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.sm,
-    color: colours.textDark,
-    fontWeight: "500",
-    flex: 1,
-  },
-  moodEntryTime: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.xs,
-    color: colours.textLight,
-    fontWeight: "500",
-  },
-  savedText: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.xs,
-    color: colours.teal,
-    textAlign: "center",
-  },
-  writeBtn: {
-    backgroundColor: colours.teal,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    minHeight: minTouchTarget,
-  },
-  writeBtnText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.lg,
-    color: colours.white,
-    fontWeight: "700",
-  },
-  emptyJournal: {
-    alignItems: "center",
-    paddingVertical: spacing.xxl,
-    gap: spacing.sm,
-  },
-  emptyJournalText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.lg,
-    color: colours.textMid,
-    fontWeight: "700",
-  },
-  emptyJournalSub: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.sm,
-    color: colours.textLight,
   },
 });

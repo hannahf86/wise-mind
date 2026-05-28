@@ -4,7 +4,9 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  Modal,
 } from "react-native";
+import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -13,192 +15,353 @@ import {
   spacing,
   radius,
   minTouchTarget,
-  modules,
 } from "../theme/theme";
+import LessonScreen from "./LessonScreen";
 
 export default function LearnScreen() {
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedModule, setSelectedModule] = useState<any>(null);
+  const [startedLessons, setStartedLessons] = useState<Set<string>>(new Set());
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const mindfulnessModule = {
+    id: "c6eabef4-d24e-4fee-a2fa-812b6dc53add",
+    name: "Mindfulness",
+    colour: colours.mindfulness,
+    icon: "leaf-outline",
+  };
+
+  function openLesson(
+    lessonId: string,
+    title: string,
+    content: string,
+    reflectPrompt: string,
+    duration: number,
+    order: number,
+  ) {
+    setSelectedLesson({
+      id: lessonId,
+      module_id: mindfulnessModule.id,
+      title,
+      content,
+      reflect_prompt: reflectPrompt,
+      duration_minutes: duration,
+      order_index: order,
+    });
+    setSelectedModule(mindfulnessModule);
+  }
+
+  function getLessonTrailingIcon(
+    lessonId: string,
+    defaultIcon: keyof typeof Ionicons.glyphMap,
+    defaultColour: string,
+  ) {
+    if (completedLessons.has(lessonId)) {
+      return (
+        <Ionicons name="checkmark-circle" size={18} color={colours.teal} />
+      );
+    }
+    if (startedLessons.has(lessonId)) {
+      return (
+        <View style={styles.startedBadge}>
+          <Ionicons name="pencil-outline" size={12} color={colours.warning} />
+        </View>
+      );
+    }
+    return <Ionicons name={defaultIcon} size={18} color={defaultColour} />;
+  }
+
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Learn</Text>
-        <Text style={styles.headerSub}>Your DBT skill journey</Text>
-      </View>
-
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+    <>
+      <Modal
+        visible={!!selectedLesson}
+        animationType="slide"
+        onRequestClose={() => setSelectedLesson(null)}
       >
-        {/* Active module — Mindfulness */}
-        <View style={[styles.activeModule, { backgroundColor: "#d6e8f5" }]}>
-          <View style={styles.moduleHeader}>
-            <View
-              style={[
-                styles.moduleIcon,
-                { backgroundColor: colours.mindfulness },
-              ]}
-            >
-              <Ionicons name="leaf-outline" size={18} color={colours.white} />
-            </View>
-            <View>
-              <Text style={[styles.moduleTitle, { color: "#222" }]}>
-                Mindfulness
-              </Text>
-              <Text style={styles.moduleSub}>Module 1 of 4 · Active now</Text>
-            </View>
-          </View>
+        {selectedLesson && selectedModule && (
+          <LessonScreen
+            lesson={selectedLesson}
+            module={selectedModule}
+            onBack={() => setSelectedLesson(null)}
+            onSaveForLater={(lessonId) => {
+              setStartedLessons((prev) => new Set([...prev, lessonId]));
+            }}
+            onComplete={() => {
+              setCompletedLessons(
+                (prev) => new Set([...prev, selectedLesson.id]),
+              );
+              setStartedLessons((prev) => {
+                const next = new Set(prev);
+                next.delete(selectedLesson.id);
+                return next;
+              });
+              setSelectedLesson(null);
+            }}
+          />
+        )}
+      </Modal>
 
-          {/* Progress bar */}
-          <View style={styles.progressRow}>
-            <View style={styles.progressBg}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Learn</Text>
+          <Text style={styles.headerSub}>Your DBT skill journey</Text>
+        </View>
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Active module — Mindfulness */}
+          <View style={[styles.activeModule, { backgroundColor: "#d6e8f5" }]}>
+            <View style={styles.moduleHeader}>
               <View
                 style={[
-                  styles.progressFill,
-                  { width: "25%", backgroundColor: colours.mindfulness },
-                ]}
-              />
-            </View>
-            <Text style={[styles.progressLabel, { color: "#4a7a94" }]}>
-              2 of 8
-            </Text>
-          </View>
-
-          {/* Lesson list */}
-          <View style={styles.lessonList}>
-            {/* Completed lesson */}
-            <TouchableOpacity
-              style={[styles.lessonItem, styles.lessonCompleted]}
-            >
-              <View
-                style={[
-                  styles.lessonNum,
+                  styles.moduleIcon,
                   { backgroundColor: colours.mindfulness },
                 ]}
               >
-                <Ionicons name="checkmark" size={12} color={colours.white} />
+                <Ionicons name="leaf-outline" size={18} color={colours.white} />
               </View>
-              <View style={styles.lessonBody}>
-                <Text style={styles.lessonName}>What is Wise Mind?</Text>
-                <Text style={styles.lessonMeta}>Completed · 3 min</Text>
-              </View>
-              <Ionicons
-                name="checkmark-circle"
-                size={18}
-                color={colours.teal}
-              />
-            </TouchableOpacity>
-
-            {/* Active lesson */}
-            <TouchableOpacity style={[styles.lessonItem, styles.lessonActive]}>
-              <View
-                style={[
-                  styles.lessonNum,
-                  { backgroundColor: colours.mindfulness },
-                ]}
-              >
-                <Text style={styles.lessonNumText}>2</Text>
-              </View>
-              <View style={styles.lessonBody}>
-                <Text style={styles.lessonName}>
-                  Observing without judgement
+              <View>
+                <Text style={[styles.moduleTitle, { color: "#222" }]}>
+                  Mindfulness
                 </Text>
-                <Text style={styles.lessonMeta}>Up next · 4 min</Text>
+                <Text style={styles.moduleSub}>Module 1 of 4 · Active now</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={colours.teal} />
-            </TouchableOpacity>
+            </View>
 
-            {/* Locked lessons */}
-            {[
-              { num: 3, name: "One-mindfully", duration: "3 min" },
-              { num: 4, name: "Non-judgementally", duration: "4 min" },
-              { num: 5, name: "Effectively", duration: "3 min" },
-            ].map((lesson) => (
-              <View
-                key={lesson.num}
-                style={[styles.lessonItem, styles.lessonLocked]}
+            {/* Progress bar */}
+            <View style={styles.progressRow}>
+              <View style={styles.progressBg}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${(completedLessons.size / 11) * 100}%`,
+                      backgroundColor: colours.mindfulness,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.progressLabel, { color: "#4a7a94" }]}>
+                {completedLessons.size} of 11
+              </Text>
+            </View>
+
+            {/* Lesson list */}
+            <View style={styles.lessonList}>
+              {/* Lesson 1 */}
+              <TouchableOpacity
+                style={[
+                  styles.lessonItem,
+                  completedLessons.has("lesson-1")
+                    ? styles.lessonCompleted
+                    : startedLessons.has("lesson-1")
+                      ? styles.lessonStarted
+                      : styles.lessonActive,
+                ]}
+                onPress={() =>
+                  openLesson(
+                    "lesson-1",
+                    "Wise Mind",
+                    "Wise Mind is the balance between Emotion Mind and Reasonable Mind. Emotion Mind is driven by feelings — intense, urgent, overwhelming. Reasonable Mind is logical and rational, but can miss what matters emotionally. Wise Mind is the integration of both — your inner wisdom that knows what is true and what is right for you.",
+                    "Think of a recent decision you made. Which mind state were you in — Emotion Mind, Reasonable Mind, or Wise Mind? What would Wise Mind have said?",
+                    10,
+                    1,
+                  )
+                }
               >
                 <View
                   style={[
                     styles.lessonNum,
-                    { backgroundColor: colours.borderLight },
+                    { backgroundColor: colours.mindfulness },
                   ]}
                 >
-                  <Text
-                    style={[styles.lessonNumText, { color: colours.textMid }]}
-                  >
-                    {lesson.num}
-                  </Text>
+                  {completedLessons.has("lesson-1") ? (
+                    <Ionicons
+                      name="checkmark"
+                      size={12}
+                      color={colours.white}
+                    />
+                  ) : (
+                    <Text style={styles.lessonNumText}>1</Text>
+                  )}
                 </View>
                 <View style={styles.lessonBody}>
-                  <Text style={[styles.lessonName, { color: colours.textMid }]}>
-                    {lesson.name}
-                  </Text>
-                  <Text style={styles.lessonMeta}>
-                    Locked · {lesson.duration}
-                  </Text>
+                  <Text style={styles.lessonName}>Wise Mind</Text>
+                  <Text style={styles.lessonMeta}>10 min</Text>
                 </View>
+                {getLessonTrailingIcon(
+                  "lesson-1",
+                  "chevron-forward",
+                  colours.teal,
+                )}
+              </TouchableOpacity>
+
+              {/* Lesson 2 */}
+              <TouchableOpacity
+                style={[
+                  styles.lessonItem,
+                  completedLessons.has("lesson-2")
+                    ? styles.lessonCompleted
+                    : startedLessons.has("lesson-2")
+                      ? styles.lessonStarted
+                      : styles.lessonActive,
+                ]}
+                onPress={() =>
+                  openLesson(
+                    "lesson-2",
+                    "Balancing Doing Mind and Being Mind",
+                    "Doing Mind is goal-oriented — focused on achieving, fixing and getting things done. Being Mind is present-focused — experiencing life as it is right now without trying to change it. Both are valuable. Problems arise when we are stuck in Doing Mind and cannot switch off, or when Being Mind becomes avoidance. Wise Mind moves fluidly between both.",
+                    "When do you find yourself stuck in Doing Mind? What would it feel like to shift into Being Mind in that moment?",
+                    10,
+                    2,
+                  )
+                }
+              >
+                <View
+                  style={[
+                    styles.lessonNum,
+                    { backgroundColor: colours.mindfulness },
+                  ]}
+                >
+                  {completedLessons.has("lesson-2") ? (
+                    <Ionicons
+                      name="checkmark"
+                      size={12}
+                      color={colours.white}
+                    />
+                  ) : (
+                    <Text style={styles.lessonNumText}>2</Text>
+                  )}
+                </View>
+                <View style={styles.lessonBody}>
+                  <Text style={styles.lessonName}>
+                    Balancing Doing Mind and Being Mind
+                  </Text>
+                  <Text style={styles.lessonMeta}>10 min</Text>
+                </View>
+                {getLessonTrailingIcon(
+                  "lesson-2",
+                  "chevron-forward",
+                  colours.teal,
+                )}
+              </TouchableOpacity>
+
+              {/* Lessons 3-11 locked */}
+              {[
+                {
+                  num: 3,
+                  name: "What Skills: Observe, Describe, Participate",
+                  duration: 10,
+                },
+                {
+                  num: 4,
+                  name: "How Skills: Non-judgementally, One-mindfully, Effectively",
+                  duration: 10,
+                },
+                { num: 5, name: "Walking the Middle Path", duration: 10 },
+                { num: 6, name: "Breathing Exercises", duration: 5 },
+                { num: 7, name: "Awareness Exercises", duration: 5 },
+                { num: 8, name: "Mindfulness Exercises", duration: 10 },
+                { num: 9, name: "A Day of Mindfulness", duration: 15 },
+                { num: 10, name: "Loving Kindness", duration: 10 },
+                { num: 11, name: "Spirituality", duration: 10 },
+              ].map((lesson) => (
+                <View
+                  key={lesson.num}
+                  style={[styles.lessonItem, styles.lessonLocked]}
+                >
+                  <View
+                    style={[
+                      styles.lessonNum,
+                      { backgroundColor: colours.borderLight },
+                    ]}
+                  >
+                    <Text
+                      style={[styles.lessonNumText, { color: colours.textMid }]}
+                    >
+                      {lesson.num}
+                    </Text>
+                  </View>
+                  <View style={styles.lessonBody}>
+                    <Text
+                      style={[styles.lessonName, { color: colours.textMid }]}
+                    >
+                      {lesson.name}
+                    </Text>
+                    <Text style={styles.lessonMeta}>
+                      {"Locked · " + lesson.duration + " min"}{" "}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={16}
+                    color={colours.lightGrey}
+                  />
+                </View>
+              ))}
+            </View>
+
+            {/* Continue button */}
+            <TouchableOpacity style={styles.continueBtn}>
+              <Ionicons name="play" size={14} color={colours.white} />
+              <Text style={styles.continueBtnText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Locked modules */}
+          {[
+            {
+              name: "Distress Tolerance",
+              sub: "Unlocks after Mindfulness",
+              colour: colours.distressTolerance,
+              icon: "shield-outline",
+            },
+            {
+              name: "Emotion Regulation",
+              sub: "Unlocks after Distress Tolerance",
+              colour: colours.emotionRegulation,
+              icon: "heart-outline",
+            },
+            {
+              name: "Interpersonal Effectiveness",
+              sub: "Unlocks after Emotion Regulation",
+              colour: colours.interpersonal,
+              icon: "people-outline",
+            },
+          ].map((mod) => (
+            <View key={mod.name} style={styles.lockedModule}>
+              <View
+                style={[styles.lockedIcon, { backgroundColor: mod.colour }]}
+              >
                 <Ionicons
-                  name="lock-closed-outline"
-                  size={16}
-                  color={colours.lightGrey}
+                  name={mod.icon as any}
+                  size={18}
+                  color={colours.white}
                 />
               </View>
-            ))}
-          </View>
-
-          {/* Continue button */}
-          <TouchableOpacity style={styles.continueBtn}>
-            <Ionicons name="play" size={14} color={colours.white} />
-            <Text style={styles.continueBtnText}>Continue — Lesson 2</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Locked modules */}
-        {[
-          {
-            name: "Distress Tolerance",
-            sub: "Unlocks after Mindfulness",
-            colour: colours.distressTolerance,
-            icon: "shield-outline",
-          },
-          {
-            name: "Emotion Regulation",
-            sub: "Unlocks after Distress Tolerance",
-            colour: colours.emotionRegulation,
-            icon: "heart-outline",
-          },
-          {
-            name: "Interpersonal Effectiveness",
-            sub: "Unlocks after Emotion Regulation",
-            colour: colours.interpersonal,
-            icon: "people-outline",
-          },
-        ].map((mod) => (
-          <View key={mod.name} style={styles.lockedModule}>
-            <View style={[styles.lockedIcon, { backgroundColor: mod.colour }]}>
-              <Ionicons
-                name={mod.icon as any}
-                size={18}
-                color={colours.white}
-              />
+              <View style={styles.lockedBody}>
+                <Text style={styles.lockedName}>{mod.name}</Text>
+                <Text style={styles.lockedSub}>{mod.sub}</Text>
+              </View>
+              <View style={styles.lockedBadge}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={11}
+                  color={colours.lightGrey}
+                />
+                <Text style={styles.lockedBadgeText}>Locked</Text>
+              </View>
             </View>
-            <View style={styles.lockedBody}>
-              <Text style={styles.lockedName}>{mod.name}</Text>
-              <Text style={styles.lockedSub}>{mod.sub}</Text>
-            </View>
-            <View style={styles.lockedBadge}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={11}
-                color={colours.lightGrey}
-              />
-              <Text style={styles.lockedBadgeText}>Locked</Text>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+          ))}
+        </ScrollView>
+      </View>
+    </>
   );
 }
 
@@ -305,6 +468,10 @@ const styles = StyleSheet.create({
     borderColor: colours.mindfulness,
     borderWidth: 1.5,
   },
+  lessonStarted: {
+    borderColor: colours.warning,
+    borderWidth: 1.5,
+  },
   lessonLocked: {
     opacity: 0.6,
   },
@@ -336,6 +503,15 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     color: colours.textMid,
     marginTop: 1,
+  },
+  startedBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colours.warning,
+    alignItems: "center",
+    justifyContent: "center",
   },
   continueBtn: {
     backgroundColor: colours.teal,
