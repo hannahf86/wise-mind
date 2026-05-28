@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -14,8 +15,26 @@ import {
   radius,
   minTouchTarget,
 } from "../theme/theme";
+import { saveJournalEntry } from "../services/journal";
 
 export default function JournalScreen() {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function handleNewEntry(
+    entryType: "reflection" | "diary_card" | "sos_log" | "gratitude",
+    content: string,
+  ) {
+    setSaving(true);
+    const userId = "00000000-0000-0000-0000-000000000001";
+    const result = await saveJournalEntry(userId, entryType, content);
+    setSaving(false);
+    if (result) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -262,10 +281,18 @@ export default function JournalScreen() {
           </View>
         </TouchableOpacity>
 
+        {/* Save confirmation */}
+        {saved && <Text style={styles.savedText}>Entry saved ✓</Text>}
+
         {/* Write button */}
-        <TouchableOpacity style={styles.writeBtn}>
+        <TouchableOpacity
+          style={styles.writeBtn}
+          onPress={() => handleNewEntry("reflection", "New journal entry")}
+        >
           <Ionicons name="pencil-outline" size={16} color={colours.white} />
-          <Text style={styles.writeBtnText}>Write a new entry</Text>
+          <Text style={styles.writeBtnText}>
+            {saving ? "Saving..." : "Write a new entry"}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -579,6 +606,12 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     color: colours.textLight,
     fontWeight: "500",
+  },
+  savedText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.teal,
+    textAlign: "center",
   },
   writeBtn: {
     backgroundColor: colours.teal,
