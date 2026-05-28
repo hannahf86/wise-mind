@@ -15,7 +15,26 @@ import {
   minTouchTarget,
 } from "../theme/theme";
 
+import { useState } from "react";
+
+// Services
+import { logMood } from "../services/mood";
+
 export default function HomeScreen() {
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [moodSaved, setMoodSaved] = useState(false);
+
+  async function handleMoodTap(mood: string) {
+    setSelectedMood(mood);
+    // Temporary dev UUID — replace with real session.user.id when auth is wired up
+    const userId = "00000000-0000-0000-0000-000000000001";
+    const saved = await logMood(mood as any, userId);
+    if (saved) {
+      setMoodSaved(true);
+      setTimeout(() => setMoodSaved(false), 2000);
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -162,17 +181,25 @@ export default function HomeScreen() {
           </View>
           <View style={styles.moodRow}>
             {[
-              { emoji: "😔", label: "Low" },
-              { emoji: "😐", label: "Okay" },
-              { emoji: "🙂", label: "Good" },
-              { emoji: "😊", label: "Great" },
+              { emoji: "😔", label: "Low", value: "low" },
+              { emoji: "😐", label: "Okay", value: "okay" },
+              { emoji: "🙂", label: "Good", value: "good" },
+              { emoji: "😊", label: "Great", value: "great" },
             ].map((mood) => (
-              <TouchableOpacity key={mood.label} style={styles.moodBtn}>
+              <TouchableOpacity
+                key={mood.label}
+                style={[
+                  styles.moodBtn,
+                  selectedMood === mood.value && styles.moodBtnSelected,
+                ]}
+                onPress={() => handleMoodTap(mood.value)}
+              >
                 <Text style={styles.moodEmoji}>{mood.emoji}</Text>
                 <Text style={styles.moodLabel}>{mood.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
+          {moodSaved && <Text style={styles.moodSavedText}>Mood logged ✓</Text>}
           <View style={styles.divider} />
           <TouchableOpacity style={styles.journalRow}>
             <Text style={styles.journalPrompt}>Get it off your chest...</Text>
@@ -455,5 +482,17 @@ const styles = StyleSheet.create({
     color: colours.textMid,
     textAlign: "left",
     lineHeight: 18,
+  },
+  moodBtnSelected: {
+    borderWidth: 1.5,
+    borderColor: colours.teal,
+    backgroundColor: colours.tealLight,
+  },
+  moodSavedText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.xs,
+    color: colours.teal,
+    textAlign: "center",
+    marginTop: spacing.xs,
   },
 });

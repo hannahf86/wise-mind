@@ -3,7 +3,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { View, ActivityIndicator } from "react-native";
 import { colours, fonts, fontSizes } from "../theme/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../services/AuthContext";
 
 // Screens
 import HomeScreen from "../screens/HomeScreen";
@@ -16,9 +15,10 @@ import SignInScreen from "../screens/auth/SignInScreen";
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
-  const { session, loading } = useAuth();
+  // const { session, loading } = useAuth(); // TODO: restore before beta
+  const session = true;
+  const loading = false;
 
-  // Show spinner while checking auth state
   if (loading) {
     return (
       <View
@@ -34,12 +34,10 @@ export default function AppNavigator() {
     );
   }
 
-  // Show sign in screen if not logged in
   if (!session) {
     return <SignInScreen />;
   }
 
-  // Show main app if logged in
   return (
     <NavigationContainer>
       <Tab.Navigator
