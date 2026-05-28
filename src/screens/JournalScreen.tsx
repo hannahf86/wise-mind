@@ -26,7 +26,7 @@ export default function JournalScreen() {
     content: string,
   ) {
     setSaving(true);
-    const userId = "00000000-0000-0000-0000-000000000001";
+    const userId = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
     const result = await saveJournalEntry(userId, entryType, content);
     setSaving(false);
     if (result) {

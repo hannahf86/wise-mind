@@ -19,6 +19,7 @@ import { useState } from "react";
 
 // Services
 import { logMood } from "../services/mood";
+import { startModule } from "../services/progress";
 
 export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -26,12 +27,20 @@ export default function HomeScreen() {
 
   async function handleMoodTap(mood: string) {
     setSelectedMood(mood);
-    // Temporary dev UUID — replace with real session.user.id when auth is wired up
-    const userId = "00000000-0000-0000-0000-000000000001";
+    const userId = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
     const saved = await logMood(mood as any, userId);
     if (saved) {
       setMoodSaved(true);
       setTimeout(() => setMoodSaved(false), 2000);
+    }
+  }
+
+  async function handleBegin() {
+    const userId = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
+    const moduleId = "c6eabef4-d24e-4fee-a2fa-812b6dc53add";
+    const result = await startModule(userId, moduleId);
+    if (result) {
+      console.log("Module started!");
     }
   }
 
@@ -97,7 +106,8 @@ export default function HomeScreen() {
                 />
               </View>
             </View>
-            <TouchableOpacity style={styles.lpBadge}>
+            <TouchableOpacity style={styles.lpBadge} onPress={handleBegin}>
+              {" "}
               <Text
                 style={[styles.lpBadgeText, { color: colours.mindfulness }]}
               >
