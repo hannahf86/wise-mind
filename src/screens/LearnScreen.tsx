@@ -40,6 +40,7 @@ export default function LearnScreen() {
     reflectPrompt: string,
     duration: number,
     order: number,
+    skillId?: string,
   ) {
     setSelectedLesson({
       id: lessonId,
@@ -49,6 +50,7 @@ export default function LearnScreen() {
       reflect_prompt: reflectPrompt,
       duration_minutes: duration,
       order_index: order,
+      skill_id: skillId,
     });
     setSelectedModule(mindfulnessModule);
   }
@@ -84,6 +86,7 @@ export default function LearnScreen() {
           <LessonScreen
             lesson={selectedLesson}
             module={selectedModule}
+            skillId={selectedLesson.skill_id}
             onBack={() => setSelectedLesson(null)}
             onSaveForLater={(lessonId) => {
               setStartedLessons((prev) => new Set([...prev, lessonId]));
@@ -172,6 +175,7 @@ export default function LearnScreen() {
                     "Think of a recent decision you made. Which mind state were you in — Emotion Mind, Reasonable Mind, or Wise Mind? What would Wise Mind have said?",
                     10,
                     1,
+                    "578ae786-a1c6-4f01-821b-115b70560ff2",
                   )
                 }
               >
@@ -216,10 +220,11 @@ export default function LearnScreen() {
                   openLesson(
                     "lesson-2",
                     "Balancing Doing Mind and Being Mind",
-                    "Doing Mind is goal-oriented — focused on achieving, fixing and getting things done. Being Mind is present-focused — experiencing life as it is right now without trying to change it. Both are valuable. Problems arise when we are stuck in Doing Mind and cannot switch off, or when Being Mind becomes avoidance. Wise Mind moves fluidly between both.",
-                    "When do you find yourself stuck in Doing Mind? What would it feel like to shift into Being Mind in that moment?",
+                    "Doing Mind is goal-oriented...",
+                    "When do you find yourself...",
                     10,
                     2,
+                    undefined, // no matching skill yet
                   )
                 }
               >

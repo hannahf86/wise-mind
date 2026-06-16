@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -19,6 +19,11 @@ import {
   minTouchTarget,
 } from "../theme/theme";
 import { saveJournalEntry } from "../services/journal";
+import {
+  addFavouriteSkill,
+  removeFavouriteSkill,
+  getFavouriteSkills,
+} from "../services/favourites";
 
 const DEV_USER_ID = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
 
@@ -45,6 +50,7 @@ type Props = {
   onBack: () => void;
   onComplete: () => void;
   onSaveForLater: (lessonId: string) => void;
+  skillId?: string;
 };
 
 export default function LessonScreen({
@@ -53,13 +59,46 @@ export default function LessonScreen({
   onBack,
   onComplete,
   onSaveForLater,
+  skillId,
 }: Props) {
   const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
   const [reflectionError, setReflectionError] = useState(false);
+  const [isFavourited, setIsFavourited] = useState(false);
+  const [favFeedback, setFavFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (skillId) checkFavourited();
+  }, []);
+
+  async function checkFavourited() {
+    const favs = await getFavouriteSkills(DEV_USER_ID);
+    setIsFavourited(favs.some((f) => f.skill_id === skillId));
+  }
+
+  async function handleToggleFavourite() {
+    if (!skillId) return;
+    if (isFavourited) {
+      await removeFavouriteSkill(DEV_USER_ID, skillId);
+      setIsFavourited(false);
+      showFavFeedback("Removed from favourites");
+    } else {
+      const result = await addFavouriteSkill(DEV_USER_ID, skillId);
+      if (result.reason === "max_reached") {
+        showFavFeedback("You already have 5 favourites — remove one first");
+      } else {
+        setIsFavourited(true);
+        showFavFeedback("Added to favourites");
+      }
+    }
+  }
+
+  function showFavFeedback(message: string) {
+    setFavFeedback(message);
+    setTimeout(() => setFavFeedback(null), 2500);
+  }
 
   function handleSaveForLater() {
-    // Just marks lesson as started on the learn screen — no journal entry saved
     onSaveForLater(lesson.id);
     onBack();
   }
@@ -96,8 +135,28 @@ export default function LessonScreen({
         <Text style={styles.headerModule} numberOfLines={1}>
           {module.name}
         </Text>
-        <View style={{ width: 44 }} />
+        {skillId ? (
+          <TouchableOpacity
+            style={styles.starBtn}
+            onPress={handleToggleFavourite}
+          >
+            <Ionicons
+              name={isFavourited ? "star" : "star-outline"}
+              size={20}
+              color={colours.white}
+            />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 44 }} />
+        )}
       </View>
+
+      {/* Favourite feedback banner */}
+      {favFeedback && (
+        <View style={styles.favFeedback}>
+          <Text style={styles.favFeedbackText}>{favFeedback}</Text>
+        </View>
+      )}
 
       <ScrollView
         style={styles.scroll}
@@ -228,6 +287,25 @@ const styles = StyleSheet.create({
     color: colours.white,
     fontWeight: "700",
     flex: 1,
+    textAlign: "center",
+  },
+  starBtn: {
+    width: minTouchTarget,
+    height: minTouchTarget,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  favFeedback: {
+    backgroundColor: colours.tealLight,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colours.borderLight,
+  },
+  favFeedbackText: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: colours.tealDark,
     textAlign: "center",
   },
   scroll: {
