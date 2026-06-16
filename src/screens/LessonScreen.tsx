@@ -66,6 +66,7 @@ export default function LessonScreen({
   const [reflectionError, setReflectionError] = useState(false);
   const [isFavourited, setIsFavourited] = useState(false);
   const [favFeedback, setFavFeedback] = useState<string | null>(null);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     if (skillId) checkFavourited();
@@ -116,10 +117,75 @@ export default function LessonScreen({
       reflection.trim(),
       false,
       lesson.title,
-      lesson.id,
+      undefined, // lesson.id is not a real UUID yet — TODO: wire up real lesson IDs
     );
     setSaving(false);
-    onComplete();
+    setCompleted(true);
+  }
+
+  if (completed) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { backgroundColor: module.colour }]}>
+          <View style={{ width: 44 }} />
+          <Text style={styles.headerModule}>{module.name}</Text>
+          <View style={{ width: 44 }} />
+        </View>
+        <View style={styles.completedScreen}>
+          <View
+            style={[
+              styles.completedIcon,
+              { backgroundColor: module.colour + "20" },
+            ]}
+          >
+            <Ionicons name="checkmark-circle" size={64} color={module.colour} />
+          </View>
+          <Text style={styles.completedTitle}>Lesson complete!</Text>
+          <Text style={styles.completedSub}>
+            Your reflection has been saved to your journal.
+          </Text>
+
+          {skillId && (
+            <View style={styles.favouriteSection}>
+              <Text style={styles.favouritePrompt}>
+                Want to add this skill to your favourites?
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.favouriteBtn,
+                  isFavourited && styles.favouriteBtnActive,
+                ]}
+                onPress={handleToggleFavourite}
+              >
+                <Ionicons
+                  name={isFavourited ? "star" : "star-outline"}
+                  size={20}
+                  color={isFavourited ? colours.white : colours.teal}
+                />
+                <Text
+                  style={[
+                    styles.favouriteBtnText,
+                    isFavourited && styles.favouriteBtnTextActive,
+                  ]}
+                >
+                  {isFavourited ? "Added to favourites" : "Add to favourites"}
+                </Text>
+              </TouchableOpacity>
+              {favFeedback && (
+                <Text style={styles.favFeedbackText}>{favFeedback}</Text>
+              )}
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={[styles.doneBtn, { backgroundColor: module.colour }]}
+            onPress={onComplete}
+          >
+            <Text style={styles.doneBtnText}>Back to lessons</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -463,6 +529,84 @@ const styles = StyleSheet.create({
   completeBtnText: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.sm,
+    color: colours.white,
+    fontWeight: "700",
+  },
+  completedScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: spacing.xl,
+    gap: spacing.xl,
+  },
+  completedIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completedTitle: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.xxxl,
+    color: colours.textDark,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  completedSub: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.md,
+    color: colours.textMid,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  favouriteSection: {
+    alignItems: "center",
+    gap: spacing.md,
+    width: "100%",
+  },
+  favouritePrompt: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.md,
+    color: colours.textMid,
+    textAlign: "center",
+  },
+  favouriteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderWidth: 1.5,
+    borderColor: colours.teal,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    backgroundColor: colours.white,
+    minHeight: minTouchTarget,
+  },
+  favouriteBtnActive: {
+    backgroundColor: colours.teal,
+    borderColor: colours.teal,
+  },
+  favouriteBtnText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.md,
+    color: colours.teal,
+    fontWeight: "700",
+  },
+  favouriteBtnTextActive: {
+    color: colours.white,
+  },
+  doneBtn: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: minTouchTarget,
+    width: "100%",
+  },
+  doneBtnText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.lg,
     color: colours.white,
     fontWeight: "700",
   },

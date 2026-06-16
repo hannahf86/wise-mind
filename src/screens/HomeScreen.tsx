@@ -136,7 +136,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Favourite skills card */}
-        <View style={[styles.card, { backgroundColor: colours.cardSkills }]}>
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: colours.cardSkills }]}
+          onPress={() => navigation.navigate("Toolkit" as never)}
+        >
+          {" "}
           <View style={styles.cardTitleRow}>
             <Ionicons name="star-outline" size={14} color="#2d5a52" />
             <Text style={[styles.cardTitle, { color: "#2d5a52" }]}>
@@ -197,7 +201,7 @@ export default function HomeScreen() {
               </>
             )}
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Mood card */}
         <View style={[styles.card, { backgroundColor: colours.cardMood }]}>

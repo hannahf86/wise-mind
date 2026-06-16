@@ -2,10 +2,11 @@ import {
   View,
   Text,
   ScrollView,
+  ScrollViewProps,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -30,6 +31,7 @@ export default function ToolkitScreen() {
   const [favourites, setFavourites] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("All");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     loadData();
@@ -114,6 +116,7 @@ export default function ToolkitScreen() {
       )}
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -134,7 +137,7 @@ export default function ToolkitScreen() {
             {favourites.length === 0 ? (
               <View style={styles.favEmpty}>
                 <Text style={styles.favEmptyText}>
-                  Add skills from the library below
+                  Complete lessons to add skills to your favourites
                 </Text>
               </View>
             ) : (
@@ -149,28 +152,8 @@ export default function ToolkitScreen() {
                 </TouchableOpacity>
               ))
             )}
-            {favourites.length < MAX_FAVOURITES && (
-              <TouchableOpacity
-                style={[styles.skillChip, styles.skillChipEmpty]}
-              >
-                <Ionicons
-                  name="add-outline"
-                  size={20}
-                  color={colours.lightGrey}
-                />
-                <Text
-                  style={[
-                    styles.skillChipName,
-                    { color: colours.lightGrey, fontWeight: "400" },
-                  ]}
-                >
-                  Add skill
-                </Text>
-              </TouchableOpacity>
-            )}
           </ScrollView>
         </View>
-
         {/* Get out of that mood */}
         <View style={[styles.section, { backgroundColor: colours.cardMood }]}>
           <View style={styles.sectionTitleRow}>
@@ -231,7 +214,6 @@ export default function ToolkitScreen() {
             ))}
           </View>
         </View>
-
         {/* DBT Skills library */}
         <View
           style={[styles.section, { backgroundColor: colours.cardLearning }]}
@@ -299,20 +281,6 @@ export default function ToolkitScreen() {
                       {skill.description}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={styles.favBtn}
-                    onPress={() => handleToggleFavourite(skill.id)}
-                  >
-                    <Ionicons
-                      name={isFavourited(skill.id) ? "star" : "star-outline"}
-                      size={18}
-                      color={
-                        isFavourited(skill.id)
-                          ? colours.teal
-                          : colours.lightGrey
-                      }
-                    />
-                  </TouchableOpacity>
                 </View>
               ))
             )}
