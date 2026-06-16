@@ -34,12 +34,11 @@ export default function AppNavigator() {
   async function checkOnboarding() {
     const { data } = await supabase
       .from("user_settings")
-      .select("setting_value")
+      .select("onboarding_complete")
       .eq("user_id", "99b6fc7e-93c5-4dfa-9192-25067d68fdff")
-      .eq("setting_key", "onboarding_complete")
       .single();
 
-    setOnboardingComplete(data?.setting_value === "true");
+    setOnboardingComplete(data?.onboarding_complete === true);
   }
 
   if (loading) {
@@ -121,6 +120,11 @@ export default function AppNavigator() {
         <Tab.Screen name="Toolkit" component={ToolkitScreen} />
         <Tab.Screen name="Journal" component={JournalScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen
+          name="DistractMe"
+          component={DistractMeScreen}
+          options={{ tabBarButton: () => null }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );

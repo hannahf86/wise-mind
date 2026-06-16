@@ -54,11 +54,15 @@ export default function SpecialInterestsScreen({ onNext }: Props) {
     await supabase.from("special_interests").insert(inserts);
 
     // Mark onboarding as complete
-    await supabase.from("user_settings").upsert({
-      user_id: DEV_USER_ID,
-      setting_key: "onboarding_complete",
-      setting_value: "true",
-    });
+    await supabase.from("user_settings").upsert(
+      {
+        user_id: DEV_USER_ID,
+        onboarding_complete: true,
+      },
+      {
+        onConflict: "user_id",
+      },
+    );
 
     setSaving(false);
     onNext();

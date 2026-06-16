@@ -325,7 +325,7 @@ export default function HomeScreen() {
         {/* Distract Me card */}
         <TouchableOpacity
           style={[styles.card, { backgroundColor: colours.skyLight }]}
-          onPress={() => navigation.navigate("Toolkit" as never)}
+          onPress={() => navigation.navigate("DistractMe" as never)}
         >
           <View style={styles.cardTitleRow}>
             <Ionicons

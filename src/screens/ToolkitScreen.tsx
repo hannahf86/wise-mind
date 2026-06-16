@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useState, useEffect, useRef } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -46,6 +47,7 @@ export default function ToolkitScreen() {
   const [showPlaylists, setShowPlaylists] = useState(false);
   const [showQuotes, setShowQuotes] = useState(false);
   const [showSelfSoothe, setShowSelfSoothe] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     loadData();
@@ -262,7 +264,7 @@ export default function ToolkitScreen() {
                 name: "Distract me",
                 sub: "AI powered",
                 colour: colours.interpersonal,
-                onPress: () => {},
+                onPress: () => navigation.navigate("DistractMe" as never),
               },
             ].map((item) => (
               <TouchableOpacity
