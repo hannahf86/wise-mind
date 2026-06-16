@@ -18,6 +18,9 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
+import { Modal } from "react-native";
+import LessonScreen from "../screens/LessonScreen";
+
 // Services
 import { logMood } from "../services/mood";
 import { startModule } from "../services/progress";
@@ -27,7 +30,8 @@ export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [moodSaved, setMoodSaved] = useState(false);
   const navigation = useNavigation();
-
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedModule, setSelectedModule] = useState<any>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
 
   useEffect(() => {
@@ -63,8 +67,68 @@ export default function HomeScreen() {
     }
   }
 
+  const skillLessonMap: Record<string, { lesson: any; module: any }> = {
+    "578ae786-a1c6-4f01-821b-115b70560ff2": {
+      lesson: {
+        id: "lesson-1",
+        module_id: "c6eabef4-d24e-4fee-a2fa-812b6dc53add",
+        title: "Wise Mind",
+        content:
+          "Wise Mind is the balance between Emotion Mind and Reasonable Mind. Emotion Mind is driven by feelings — intense, urgent, overwhelming. Reasonable Mind is logical and rational, but can miss what matters emotionally. Wise Mind is the integration of both — your inner wisdom that knows what is true and what is right for you.",
+        reflect_prompt:
+          "Think of a recent decision you made. Which mind state were you in — Emotion Mind, Reasonable Mind, or Wise Mind? What would Wise Mind have said?",
+        duration_minutes: 10,
+        order_index: 1,
+      },
+      module: {
+        id: "c6eabef4-d24e-4fee-a2fa-812b6dc53add",
+        name: "Mindfulness",
+        colour: colours.mindfulness,
+        icon: "leaf-outline",
+      },
+    },
+    "eb21ca7b-b34d-42af-a63a-622e9d4407ec": {
+      lesson: {
+        id: "b17d3574-cb36-4fa5-ba1f-8147ad765c26",
+        module_id: "4a1e3b19-c020-4601-8554-7490a774d4b9",
+        title: "STOP",
+        content:
+          "STOP is a skill for breaking the automatic reaction cycle. Stop — do not act. Take a step back — physically if needed, mentally at minimum. Observe — what is happening inside and outside you? Proceed mindfully — from Wise Mind, what is the most effective next step? STOP creates a pause between stimulus and response.",
+        reflect_prompt:
+          "Recall a moment when you reacted without thinking. Walk through what STOP would have looked like in that situation.",
+        duration_minutes: 10,
+        order_index: 2,
+      },
+      module: {
+        id: "4a1e3b19-c020-4601-8554-7490a774d4b9",
+        name: "Distress Tolerance",
+        colour: colours.distressTolerance,
+        icon: "shield-outline",
+      },
+    },
+  };
+
   return (
-    <View style={styles.container}>
+    <>
+      <Modal
+        visible={!!selectedLesson}
+        animationType="slide"
+        onRequestClose={() => setSelectedLesson(null)}
+      >
+        {selectedLesson && selectedModule && (
+          <LessonScreen
+            lesson={selectedLesson}
+            module={selectedModule}
+            skillId={selectedLesson.skill_id}
+            onBack={() => setSelectedLesson(null)}
+            onSaveForLater={() => setSelectedLesson(null)}
+            onComplete={() => {
+              loadFavourites();
+              setSelectedLesson(null);
+            }}
+          />
+        )}
+      </Modal>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -140,7 +204,6 @@ export default function HomeScreen() {
           style={[styles.card, { backgroundColor: colours.cardSkills }]}
           onPress={() => navigation.navigate("Toolkit" as never)}
         >
-          {" "}
           <View style={styles.cardTitleRow}>
             <Ionicons name="star-outline" size={14} color="#2d5a52" />
             <Text style={[styles.cardTitle, { color: "#2d5a52" }]}>
@@ -169,7 +232,20 @@ export default function HomeScreen() {
             ) : (
               <>
                 {favourites.map((fav) => (
-                  <TouchableOpacity key={fav.id} style={styles.favChip}>
+                  <TouchableOpacity
+                    key={fav.id}
+                    style={styles.favChip}
+                    onPress={() => {
+                      const match = skillLessonMap[fav.skill_id];
+                      if (match) {
+                        setSelectedLesson({
+                          ...match.lesson,
+                          skill_id: fav.skill_id,
+                        });
+                        setSelectedModule(match.module);
+                      }
+                    }}
+                  >
                     <Ionicons
                       name={(fav.skills?.icon || "star-outline") as any}
                       size={16}
@@ -259,7 +335,7 @@ export default function HomeScreen() {
             />
             <Text style={[styles.cardTitle, { color: colours.skyText }]}>
               Distract Me
-            </Text>{" "}
+            </Text>
           </View>
           <Text style={styles.distractDesc}>
             Feeling overwhelmed? Pick something you love and we'll talk about
@@ -291,7 +367,7 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </>
   );
 }
 

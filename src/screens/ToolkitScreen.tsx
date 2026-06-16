@@ -22,6 +22,8 @@ import {
   removeFavouriteSkill,
   getAllSkills,
 } from "../services/favourites";
+import { Modal } from "react-native";
+import LessonScreen from "./LessonScreen";
 
 const DEV_USER_ID = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
 const MAX_FAVOURITES = 5;
@@ -32,6 +34,8 @@ export default function ToolkitScreen() {
   const [activeTab, setActiveTab] = useState("All");
   const [feedback, setFeedback] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedModule, setSelectedModule] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -67,6 +71,47 @@ export default function ToolkitScreen() {
       }
     }
   }
+
+  const skillLessonMap: Record<string, { lesson: any; module: any }> = {
+    "578ae786-a1c6-4f01-821b-115b70560ff2": {
+      lesson: {
+        id: "lesson-1",
+        module_id: "c6eabef4-d24e-4fee-a2fa-812b6dc53add",
+        title: "Wise Mind",
+        content:
+          "Wise Mind is the balance between Emotion Mind and Reasonable Mind. Emotion Mind is driven by feelings — intense, urgent, overwhelming. Reasonable Mind is logical and rational, but can miss what matters emotionally. Wise Mind is the integration of both — your inner wisdom that knows what is true and what is right for you.",
+        reflect_prompt:
+          "Think of a recent decision you made. Which mind state were you in — Emotion Mind, Reasonable Mind, or Wise Mind? What would Wise Mind have said?",
+        duration_minutes: 10,
+        order_index: 1,
+      },
+      module: {
+        id: "c6eabef4-d24e-4fee-a2fa-812b6dc53add",
+        name: "Mindfulness",
+        colour: colours.mindfulness,
+        icon: "leaf-outline",
+      },
+    },
+    "eb21ca7b-b34d-42af-a63a-622e9d4407ec": {
+      lesson: {
+        id: "b17d3574-cb36-4fa5-ba1f-8147ad765c26",
+        module_id: "4a1e3b19-c020-4601-8554-7490a774d4b9",
+        title: "STOP",
+        content:
+          "STOP is a skill for breaking the automatic reaction cycle. Stop — do not act. Take a step back — physically if needed, mentally at minimum. Observe — what is happening inside and outside you? Proceed mindfully — from Wise Mind, what is the most effective next step? STOP creates a pause between stimulus and response.",
+        reflect_prompt:
+          "Recall a moment when you reacted without thinking. Walk through what STOP would have looked like in that situation.",
+        duration_minutes: 10,
+        order_index: 2,
+      },
+      module: {
+        id: "4a1e3b19-c020-4601-8554-7490a774d4b9",
+        name: "Distress Tolerance",
+        colour: colours.distressTolerance,
+        icon: "shield-outline",
+      },
+    },
+  };
 
   function showFeedback(message: string) {
     setFeedback(message);
@@ -142,7 +187,20 @@ export default function ToolkitScreen() {
               </View>
             ) : (
               favourites.map((fav) => (
-                <TouchableOpacity key={fav.id} style={styles.skillChip}>
+                <TouchableOpacity
+                  key={fav.id}
+                  style={styles.skillChip}
+                  onPress={() => {
+                    const match = skillLessonMap[fav.skill_id];
+                    if (match) {
+                      setSelectedLesson({
+                        ...match.lesson,
+                        skill_id: fav.skill_id,
+                      });
+                      setSelectedModule(match.module);
+                    }
+                  }}
+                >
                   <Ionicons
                     name={(fav.skills?.icon || "star-outline") as any}
                     size={20}
@@ -287,6 +345,25 @@ export default function ToolkitScreen() {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        visible={!!selectedLesson}
+        animationType="slide"
+        onRequestClose={() => setSelectedLesson(null)}
+      >
+        {selectedLesson && selectedModule && (
+          <LessonScreen
+            lesson={selectedLesson}
+            module={selectedModule}
+            skillId={selectedLesson.skill_id}
+            onBack={() => setSelectedLesson(null)}
+            onSaveForLater={() => setSelectedLesson(null)}
+            onComplete={() => {
+              loadData();
+              setSelectedLesson(null);
+            }}
+          />
+        )}
+      </Modal>
     </View>
   );
 }
