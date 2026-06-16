@@ -14,6 +14,7 @@ import {
   radius,
   minTouchTarget,
 } from "../theme/theme";
+import { supabase } from "../services/supabase";
 
 export default function ProfileScreen() {
   return (
@@ -129,6 +130,16 @@ export default function ProfileScreen() {
         {/* Danger zone */}
         <TouchableOpacity style={styles.dangerRow}>
           <View style={styles.dangerBody}>
+            {/* Sign out */}
+            <TouchableOpacity
+              style={styles.signOutBtn}
+              onPress={async () => {
+                await supabase.auth.signOut();
+              }}
+            >
+              <Ionicons name="log-out-outline" size={18} color={colours.teal} />
+              <Text style={styles.signOutText}>Sign out</Text>
+            </TouchableOpacity>
             <Text style={styles.dangerTitle}>Delete my account</Text>
             <Text style={styles.dangerSub}>
               Permanently removes all your data
@@ -315,5 +326,22 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     color: colours.lightGrey,
     textAlign: "center",
+  },
+  signOutBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    backgroundColor: colours.white,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colours.teal,
+    minHeight: minTouchTarget,
+  },
+  signOutText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.md,
+    color: colours.teal,
+    fontWeight: "700",
   },
 });

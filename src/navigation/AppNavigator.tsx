@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { View, ActivityIndicator } from "react-native";
 import { colours, fonts, fontSizes } from "../theme/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { useState, useEffect } from "react";
+import { supabase } from "../services/supabase";
 
 // Screens
 import HomeScreen from "../screens/HomeScreen";
@@ -12,6 +14,7 @@ import JournalScreen from "../screens/JournalScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import DistractMeScreen from "../screens/DistractMeScreen";
+import OnboardingNavigator from "../screens/onboarding/OnboardingNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +22,25 @@ export default function AppNavigator() {
   // const { session, loading } = useAuth(); // TODO: restore before beta
   const session = true;
   const loading = false;
+
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(
+    null,
+  );
+
+  useEffect(() => {
+    checkOnboarding();
+  }, []);
+
+  async function checkOnboarding() {
+    const { data } = await supabase
+      .from("user_settings")
+      .select("setting_value")
+      .eq("user_id", "99b6fc7e-93c5-4dfa-9192-25067d68fdff")
+      .eq("setting_key", "onboarding_complete")
+      .single();
+
+    setOnboardingComplete(data?.setting_value === "true");
+  }
 
   if (loading) {
     return (
@@ -37,6 +59,27 @@ export default function AppNavigator() {
 
   if (!session) {
     return <SignInScreen />;
+  }
+
+  if (onboardingComplete === null) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colours.background,
+        }}
+      >
+        <ActivityIndicator color={colours.teal} size="large" />
+      </View>
+    );
+  }
+
+  if (!onboardingComplete) {
+    return (
+      <OnboardingNavigator onComplete={() => setOnboardingComplete(true)} />
+    );
   }
 
   return (

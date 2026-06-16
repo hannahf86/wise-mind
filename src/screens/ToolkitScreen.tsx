@@ -16,6 +16,8 @@ import {
   radius,
   minTouchTarget,
 } from "../theme/theme";
+
+// Skills
 import {
   getFavouriteSkills,
   addFavouriteSkill,
@@ -24,6 +26,11 @@ import {
 } from "../services/favourites";
 import { Modal } from "react-native";
 import LessonScreen from "./LessonScreen";
+
+// Toolkit screens
+import PlaylistsScreen from "./toolkit/PlaylistsScreen";
+import QuotesScreen from "./toolkit/QuotesScreen";
+import SelfSootheScreen from "./toolkit/SelfSootheScreen";
 
 const DEV_USER_ID = "99b6fc7e-93c5-4dfa-9192-25067d68fdff";
 const MAX_FAVOURITES = 5;
@@ -36,6 +43,9 @@ export default function ToolkitScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [selectedModule, setSelectedModule] = useState<any>(null);
+  const [showPlaylists, setShowPlaylists] = useState(false);
+  const [showQuotes, setShowQuotes] = useState(false);
+  const [showSelfSoothe, setShowSelfSoothe] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -231,27 +241,35 @@ export default function ToolkitScreen() {
                 name: "My songs",
                 sub: "Saved playlist",
                 colour: colours.distressTolerance,
+                onPress: () => setShowPlaylists(true),
               },
               {
                 icon: "book-outline",
-                name: "My books",
-                sub: "Saved reads",
+                name: "My quotes",
+                sub: "Saved quotes",
                 colour: colours.mindfulness,
+                onPress: () => setShowQuotes(true),
               },
               {
                 icon: "heart-outline",
                 name: "Self-soothe",
                 sub: "Comfort list",
                 colour: colours.emotionRegulation,
+                onPress: () => setShowSelfSoothe(true),
               },
               {
                 icon: "sparkles-outline",
                 name: "Distract me",
                 sub: "AI powered",
                 colour: colours.interpersonal,
+                onPress: () => {},
               },
             ].map((item) => (
-              <TouchableOpacity key={item.name} style={styles.moodItem}>
+              <TouchableOpacity
+                key={item.name}
+                style={styles.moodItem}
+                onPress={item.onPress}
+              >
                 <View
                   style={[
                     styles.moodItemIcon,
@@ -272,6 +290,7 @@ export default function ToolkitScreen() {
             ))}
           </View>
         </View>
+
         {/* DBT Skills library */}
         <View
           style={[styles.section, { backgroundColor: colours.cardLearning }]}
@@ -283,7 +302,19 @@ export default function ToolkitScreen() {
             </Text>
           </View>
 
-          {/* Module filter tabs */}
+          {/* Locked overlay */}
+          <View style={styles.libraryLocked}>
+            <Ionicons name="lock-closed-outline" size={28} color="#3d2d4a" />
+            <Text style={styles.libraryLockedTitle}>
+              Complete all lessons to unlock
+            </Text>
+            <Text style={styles.libraryLockedSub}>
+              Work through the modules in the Learn tab to build your full
+              skills library
+            </Text>
+          </View>
+
+          {/* Module filter tabs
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -311,7 +342,7 @@ export default function ToolkitScreen() {
           </ScrollView>
 
           {/* Skills list */}
-          <View style={styles.skillsList}>
+          {/* <View style={styles.skillsList}>
             {filteredSkills.length === 0 ? (
               <View style={styles.emptySkills}>
                 <Text style={styles.emptySkillsText}>No skills yet</Text>
@@ -342,7 +373,7 @@ export default function ToolkitScreen() {
                 </View>
               ))
             )}
-          </View>
+          </View> */}
         </View>
       </ScrollView>
       <Modal
@@ -363,6 +394,31 @@ export default function ToolkitScreen() {
             }}
           />
         )}
+      </Modal>
+
+      {/* GET OUT OF THAT MOOD */}
+      <Modal
+        visible={showPlaylists}
+        animationType="slide"
+        onRequestClose={() => setShowPlaylists(false)}
+      >
+        <PlaylistsScreen onClose={() => setShowPlaylists(false)} />
+      </Modal>
+
+      <Modal
+        visible={showQuotes}
+        animationType="slide"
+        onRequestClose={() => setShowQuotes(false)}
+      >
+        <QuotesScreen onClose={() => setShowQuotes(false)} />
+      </Modal>
+
+      <Modal
+        visible={showSelfSoothe}
+        animationType="slide"
+        onRequestClose={() => setShowSelfSoothe(false)}
+      >
+        <SelfSootheScreen onClose={() => setShowSelfSoothe(false)} />
       </Modal>
     </View>
   );
@@ -591,5 +647,26 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: fontSizes.sm,
     color: colours.textMid,
+  },
+  libraryLocked: {
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderRadius: radius.sm,
+    padding: spacing.xl,
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  libraryLockedTitle: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.lg,
+    color: "#3d2d4a",
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  libraryLockedSub: {
+    fontFamily: fonts.body,
+    fontSize: fontSizes.sm,
+    color: colours.textMid,
+    textAlign: "center",
+    lineHeight: 20,
   },
 });
