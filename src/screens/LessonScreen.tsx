@@ -9,6 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { useState, useEffect } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colours,
@@ -51,6 +52,8 @@ type Props = {
   onComplete: () => void;
   onSaveForLater: (lessonId: string) => void;
   skillId?: string;
+  // Total lessons in the module — drives the lesson-position indicator.
+  lessonCount?: number;
 };
 
 export default function LessonScreen({
@@ -60,7 +63,9 @@ export default function LessonScreen({
   onComplete,
   onSaveForLater,
   skillId,
+  lessonCount,
 }: Props) {
+  const insets = useSafeAreaInsets();
   const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
   const [reflectionError, setReflectionError] = useState(false);
@@ -86,7 +91,7 @@ export default function LessonScreen({
     } else {
       const result = await addFavouriteSkill(DEV_USER_ID, skillId);
       if (result.reason === "max_reached") {
-        showFavFeedback("You already have 5 favourites — remove one first");
+        showFavFeedback("You already have 5 favourites - remove one first");
       } else {
         setIsFavourited(true);
         showFavFeedback("Added to favourites");
@@ -123,24 +128,36 @@ export default function LessonScreen({
     setCompleted(true);
   }
 
+  // Lesson-position indicator (NOT a reading-progress bar): which lesson in the module.
+  const showProgress = typeof lessonCount === "number" && lessonCount > 0;
+  const progressPct = showProgress
+    ? Math.max(0, Math.min(1, lesson.order_index / (lessonCount as number))) *
+      100
+    : 0;
+
+  // ---- Completion screen ----
   if (completed) {
     return (
       <View style={styles.container}>
-        <View style={[styles.header, { backgroundColor: module.colour }]}>
-          <View style={{ width: 44 }} />
-          <Text style={styles.headerModule}>{module.name}</Text>
-          <View style={{ width: 44 }} />
-        </View>
-        <View style={styles.completedScreen}>
-          <View
-            style={[
-              styles.completedIcon,
-              { backgroundColor: module.colour + "20" },
-            ]}
+        <View style={[styles.topBar, { paddingTop: insets.top + spacing.sm }]}>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={onComplete}
+            accessibilityLabel="Back to lessons"
           >
-            <Ionicons name="checkmark-circle" size={64} color={module.colour} />
+            <Ionicons name="arrow-back" size={24} color={colours.textDark} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.completedScreen}>
+          <View style={styles.completedIcon}>
+            <Ionicons
+              name="checkmark-circle"
+              size={72}
+              color={colours.jade}
+            />
           </View>
-          <Text style={styles.completedTitle}>Lesson complete!</Text>
+          <Text style={styles.completedTitle}>Lesson complete</Text>
           <Text style={styles.completedSub}>
             Your reflection has been saved to your journal.
           </Text>
@@ -160,7 +177,7 @@ export default function LessonScreen({
                 <Ionicons
                   name={isFavourited ? "star" : "star-outline"}
                   size={20}
-                  color={isFavourited ? colours.white : colours.teal}
+                  color={isFavourited ? colours.white : colours.jade}
                 />
                 <Text
                   style={[
@@ -176,45 +193,40 @@ export default function LessonScreen({
               )}
             </View>
           )}
+        </View>
 
+        <View
+          style={[
+            styles.bottomBar,
+            { paddingBottom: insets.bottom + spacing.md },
+          ]}
+        >
           <TouchableOpacity
-            style={[styles.doneBtn, { backgroundColor: module.colour }]}
+            style={styles.completeBtn}
             onPress={onComplete}
           >
-            <Text style={styles.doneBtnText}>Back to lessons</Text>
+            <Text style={styles.completeBtnText}>Back to lessons</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   }
 
+  // ---- Lesson screen ----
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: module.colour }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-          <Ionicons name="arrow-back-outline" size={20} color={colours.white} />
+      {/* Top bar - back arrow only, on the plain canvas */}
+      <View style={[styles.topBar, { paddingTop: insets.top + spacing.sm }]}>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={onBack}
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={24} color={colours.textDark} />
         </TouchableOpacity>
-        <Text style={styles.headerModule} numberOfLines={1}>
-          {module.name}
-        </Text>
-        {skillId ? (
-          <TouchableOpacity
-            style={styles.starBtn}
-            onPress={handleToggleFavourite}
-          >
-            <Ionicons
-              name={isFavourited ? "star" : "star-outline"}
-              size={20}
-              color={colours.white}
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 44 }} />
-        )}
       </View>
 
       {/* Favourite feedback banner */}
@@ -230,55 +242,60 @@ export default function LessonScreen({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Skill image placeholder */}
-        <View
-          style={[
-            styles.imagePlaceholder,
-            { backgroundColor: module.colour + "30" },
-          ]}
-        >
-          <Ionicons name={module.icon as any} size={48} color={module.colour} />
-          <Text style={[styles.imagePlaceholderText, { color: module.colour }]}>
-            Image coming soon
+        {/* Module pill + duration */}
+        <View style={styles.metaRow}>
+          <View
+            style={[
+              styles.modulePill,
+              { backgroundColor: module.colour + "1A" },
+            ]}
+          >
+            <Ionicons
+              name={module.icon as any}
+              size={14}
+              color={module.colour}
+            />
+            <Text style={[styles.modulePillText, { color: module.colour }]}>
+              {module.name}
+            </Text>
+          </View>
+          <Text style={styles.durationText}>
+            {lesson.duration_minutes} min
           </Text>
         </View>
 
-        {/* Title and meta */}
-        <View style={styles.titleSection}>
-          <Text style={styles.lessonTitle}>{lesson.title}</Text>
-          <View style={styles.metaRow}>
-            <View
-              style={[
-                styles.moduleTag,
-                { backgroundColor: module.colour + "20" },
-              ]}
-            >
-              <Text style={[styles.moduleTagText, { color: module.colour }]}>
-                {module.name}
-              </Text>
+        {/* Lesson-position indicator */}
+        {showProgress && (
+          <View style={styles.progressRow}>
+            <View style={styles.progressBg}>
+              <View
+                style={[styles.progressFill, { width: `${progressPct}%` }]}
+              />
             </View>
-            <View style={styles.metaDot} />
-            <Ionicons name="time-outline" size={12} color={colours.textMid} />
-            <Text style={styles.metaText}>{lesson.duration_minutes} mins</Text>
+            <Text style={styles.progressLabel}>
+              {lesson.order_index} / {lessonCount}
+            </Text>
           </View>
+        )}
+
+        {/* Title */}
+        <Text style={styles.lessonTitle}>{lesson.title}</Text>
+
+        {/* Content card */}
+        <View style={styles.contentCard}>
+          <Text style={styles.contentText}>{lesson.content}</Text>
         </View>
 
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Content */}
-        <Text style={styles.content}>{lesson.content}</Text>
-
-        {/* Reflect section */}
-        <View style={styles.reflectSection}>
+        {/* Reflect card */}
+        <View style={styles.reflectCard}>
           <View style={styles.reflectTitleRow}>
-            <Ionicons name="bulb-outline" size={16} color={colours.teal} />
+            <Ionicons name="bulb-outline" size={18} color={colours.jade} />
             <Text style={styles.reflectTitle}>Reflect</Text>
           </View>
           <Text style={styles.reflectPrompt}>{lesson.reflect_prompt}</Text>
           <Text style={styles.reflectHint}>
-            You need to write a reflection to complete this lesson — but you can
-            save it for later and come back.
+            Writing a reflection completes this lesson - or save it and come
+            back later.
           </Text>
 
           <TextInput
@@ -300,182 +317,182 @@ export default function LessonScreen({
             </Text>
           )}
         </View>
-
-        {/* Buttons */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.saveBtn} onPress={handleSaveForLater}>
-            <Ionicons name="bookmark-outline" size={16} color={colours.teal} />
-            <Text style={styles.saveBtnText}>Save for later</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.completeBtn, { backgroundColor: module.colour }]}
-            onPress={handleComplete}
-            disabled={saving}
-          >
-            <Ionicons
-              name="checkmark-outline"
-              size={16}
-              color={colours.white}
-            />
-            <Text style={styles.completeBtnText}>
-              {saving ? "Saving..." : "Mark as complete"}
-            </Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+
+      {/* Fixed bottom action bar */}
+      <View
+        style={[styles.bottomBar, { paddingBottom: insets.bottom + spacing.md }]}
+      >
+        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveForLater}>
+          <Ionicons name="bookmark-outline" size={18} color={colours.jade} />
+          <Text style={styles.saveBtnText}>Save</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.completeBtn}
+          onPress={handleComplete}
+          disabled={saving}
+        >
+          <Ionicons name="checkmark-circle" size={20} color={colours.white} />
+          <Text style={styles.completeBtnText}>
+            {saving ? "Saving..." : "Mark as complete"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }
+
+const cardShadow = {
+  shadowColor: "#1C3830",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 2,
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colours.background,
   },
-  header: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: 52,
-    paddingBottom: spacing.lg,
+  topBar: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xs,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
   },
-  backBtn: {
+  iconBtn: {
     width: minTouchTarget,
     height: minTouchTarget,
     alignItems: "center",
     justifyContent: "center",
-  },
-  headerModule: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.md,
-    color: colours.white,
-    fontWeight: "700",
-    flex: 1,
-    textAlign: "center",
-  },
-  starBtn: {
-    width: minTouchTarget,
-    height: minTouchTarget,
-    alignItems: "center",
-    justifyContent: "center",
+    marginLeft: -spacing.sm,
   },
   favFeedback: {
-    backgroundColor: colours.tealLight,
-    paddingHorizontal: spacing.xl,
+    backgroundColor: colours.softMint,
+    marginHorizontal: spacing.xl,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderBottomWidth: 0.5,
-    borderBottomColor: colours.borderLight,
   },
   favFeedbackText: {
     fontFamily: fonts.body,
     fontSize: fontSizes.sm,
-    color: colours.tealDark,
+    color: colours.jade,
     textAlign: "center",
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 48,
-  },
-  imagePlaceholder: {
-    width: "100%",
-    aspectRatio: 16 / 9,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-  },
-  imagePlaceholderText: {
-    fontFamily: fonts.body,
-    fontSize: fontSizes.sm,
-  },
-  titleSection: {
-    padding: spacing.xl,
-    paddingBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  lessonTitle: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.xxl,
-    color: colours.textDark,
-    fontWeight: "700",
-    lineHeight: 28,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xxl,
+    gap: spacing.lg,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
+    gap: spacing.md,
   },
-  moduleTag: {
+  modulePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
     borderRadius: radius.full,
     paddingHorizontal: spacing.md,
-    paddingVertical: 3,
+    paddingVertical: spacing.xs + 2,
   },
-  moduleTagText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.xs,
-    fontWeight: "700",
+  modulePillText: {
+    fontFamily: fonts.headingMedium,
+    fontSize: fontSizes.sm,
   },
-  metaDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: colours.lightGrey,
-  },
-  metaText: {
+  durationText: {
     fontFamily: fonts.body,
-    fontSize: fontSizes.xs,
-    color: colours.textMid,
+    fontSize: fontSizes.sm,
+    color: colours.textSecondary,
   },
-  divider: {
-    height: 0.5,
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    marginTop: -spacing.sm,
+  },
+  progressBg: {
+    flex: 1,
+    height: 6,
     backgroundColor: colours.borderLight,
-    marginHorizontal: spacing.xl,
-    marginBottom: spacing.xl,
+    borderRadius: radius.full,
+    overflow: "hidden",
   },
-  content: {
+  progressFill: {
+    height: 6,
+    borderRadius: radius.full,
+    backgroundColor: colours.jadeMid,
+  },
+  progressLabel: {
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.sm,
+    color: colours.jade,
+  },
+  lessonTitle: {
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.xxxl,
+    color: colours.textDark,
+    lineHeight: 40,
+    marginTop: -spacing.xs,
+  },
+  contentCard: {
+    backgroundColor: colours.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colours.borderCard,
+    padding: spacing.xl,
+    ...cardShadow,
+  },
+  contentText: {
     fontFamily: fonts.body,
     fontSize: fontSizes.md,
-    color: colours.textDark,
+    color: colours.textBody,
     lineHeight: 26,
-    paddingHorizontal: spacing.xl,
-    marginBottom: spacing.xl,
   },
-  reflectSection: {
-    marginHorizontal: spacing.xl,
-    marginBottom: spacing.xl,
+  reflectCard: {
+    backgroundColor: colours.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colours.borderCard,
+    padding: spacing.xl,
     gap: spacing.md,
+    ...cardShadow,
   },
   reflectTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   reflectTitle: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.lg,
-    color: colours.teal,
-    fontWeight: "700",
+    color: colours.jade,
   },
   reflectPrompt: {
     fontFamily: fonts.body,
     fontSize: fontSizes.md,
-    color: colours.textMid,
-    lineHeight: 22,
+    color: colours.textBody,
+    lineHeight: 24,
   },
   reflectHint: {
     fontFamily: fonts.body,
     fontSize: fontSizes.xs,
-    color: colours.textLight,
+    color: colours.textSecondary,
     lineHeight: 18,
   },
   reflectInput: {
-    backgroundColor: colours.white,
+    backgroundColor: colours.mint50,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colours.borderLight,
+    borderColor: colours.borderInput,
     padding: spacing.lg,
     fontFamily: fonts.body,
     fontSize: fontSizes.md,
@@ -492,83 +509,86 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.xs,
     color: colours.warning,
   },
-  buttonRow: {
+  bottomBar: {
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: spacing.md,
     paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colours.borderLight,
+    backgroundColor: colours.background,
   },
   saveBtn: {
-    flex: 1,
-    borderRadius: radius.md,
-    padding: spacing.lg,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: spacing.xs,
-    minHeight: minTouchTarget,
+    gap: spacing.sm,
+    minHeight: minTouchTarget + 4,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.full,
     borderWidth: 1.5,
-    borderColor: colours.teal,
-    backgroundColor: colours.white,
+    borderColor: colours.jade,
+    backgroundColor: colours.card,
   },
   saveBtnText: {
     fontFamily: fonts.heading,
-    fontSize: fontSizes.sm,
-    color: colours.teal,
-    fontWeight: "700",
+    fontSize: fontSizes.md,
+    color: colours.jade,
   },
   completeBtn: {
     flex: 1,
-    borderRadius: radius.md,
-    padding: spacing.lg,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: spacing.xs,
-    minHeight: minTouchTarget,
+    gap: spacing.sm,
+    minHeight: minTouchTarget + 4,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.full,
+    backgroundColor: colours.jade,
   },
   completeBtnText: {
     fontFamily: fonts.heading,
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.md,
     color: colours.white,
-    fontWeight: "700",
   },
   completedScreen: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: spacing.xl,
-    gap: spacing.xl,
+    gap: spacing.lg,
   },
   completedIcon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 112,
+    height: 112,
+    borderRadius: 56,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colours.softMint,
   },
   completedTitle: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.xxxl,
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.xxl,
     color: colours.textDark,
-    fontWeight: "700",
     textAlign: "center",
   },
   completedSub: {
     fontFamily: fonts.body,
     fontSize: fontSizes.md,
-    color: colours.textMid,
+    color: colours.textBody,
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 24,
   },
   favouriteSection: {
     alignItems: "center",
     gap: spacing.md,
     width: "100%",
+    marginTop: spacing.md,
   },
   favouritePrompt: {
     fontFamily: fonts.body,
     fontSize: fontSizes.md,
-    color: colours.textMid,
+    color: colours.textBody,
     textAlign: "center",
   },
   favouriteBtn: {
@@ -576,38 +596,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     borderWidth: 1.5,
-    borderColor: colours.teal,
-    borderRadius: radius.md,
+    borderColor: colours.jade,
+    borderRadius: radius.full,
     paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-    backgroundColor: colours.white,
+    paddingVertical: spacing.md,
+    backgroundColor: colours.card,
     minHeight: minTouchTarget,
   },
   favouriteBtnActive: {
-    backgroundColor: colours.teal,
-    borderColor: colours.teal,
+    backgroundColor: colours.jade,
+    borderColor: colours.jade,
   },
   favouriteBtnText: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.md,
-    color: colours.teal,
-    fontWeight: "700",
+    color: colours.jade,
   },
   favouriteBtnTextActive: {
     color: colours.white,
-  },
-  doneBtn: {
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: minTouchTarget,
-    width: "100%",
-  },
-  doneBtnText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.lg,
-    color: colours.white,
-    fontWeight: "700",
   },
 });

@@ -1,118 +1,152 @@
 // Wise Mind Design System
-// All colours, fonts, spacing and module colours in one place
+// All colours, fonts, spacing and module colours in one place.
+//
+// Updated to the new brand kit (jade palette, Poppins headings, Atkinson body).
+// Existing token NAMES are all preserved so screens that already import them keep
+// working — only their VALUES have been retuned to the new brand. New semantic
+// tokens (jade, softMint, canvas, etc.) are added below for the redesigned screens.
 
 export const colours = {
-  // Primary brand
-  teal: "#5b7d74",
-  tealDark: "#3d5c56",
-  tealLight: "#f0f5f4",
+  // Primary brand — jade
+  // NOTE: `teal` is kept as the name older screens use; it now resolves to jade.
+  teal: "#1E7158", // Jade primary
+  tealDark: "#1C3830", // Forest dark
+  tealLight: "#E7F4F0", // Soft mint
 
-  // Background
-  background: "#faf8f6",
-  white: "#ffffff",
+  // New brand primary tokens (preferred names going forward)
+  jade: "#1E7158",
+  jadeMid: "#1AA086",
+  softMint: "#E7F4F0",
+  mint50: "#F1FAF7",
+  forestDark: "#1C3830",
 
-  // Peach — warm accent
-  peach: "#e7d8ca",
-  peachLight: "#fdefd8",
-  peachBorder: "#d9c5b2",
-  peachText: "#5a3e2b",
+  // Surfaces
+  background: "#F5F3F1", // Warm off-white canvas
+  canvas: "#EDECE9",
+  card: "#FFFFFF",
+  white: "#FFFFFF",
 
-  // Module colours
-  mindfulness: "#9cbacf", // Module 1 — blue
-  distressTolerance: "#dda98b", // Module 2 — terracotta
-  emotionRegulation: "#b59ab8", // Module 3 — lilac
-  interpersonal: "#ddc88b", // Module 4 — gold
+  // Warm neutrals (kept under the old "peach" names used by other screens)
+  peach: "#EDE7E0",
+  peachLight: "#F5E8E4",
+  peachBorder: "#E8E1D9",
+  peachText: "#6A6560",
 
-  // Card backgrounds
-  cardLearning: "#c9bdd4", // lilac
-  cardSkills: "#c8dbd6", // sage
-  cardMood: "#fdefd8", // warm peach
-  cardCommunity: "#f5dfc8", // apricot
+  // Module colours (new brand)
+  mindfulness: "#4A7B50", // Module 1 — green
+  distressTolerance: "#4A7A94", // Module 2 — blue
+  emotionRegulation: "#B06A50", // Module 3 — terracotta
+  interpersonal: "#A74C30", // Module 4 — clay
+
+  // Card backgrounds (soft tints)
+  cardLearning: "#E7F4F0",
+  cardSkills: "#F1FAF7",
+  cardMood: "#F5F0EA",
+  cardCommunity: "#F5E8E4",
 
   // Text
-  textDark: "#222222",
-  textMid: "#6b6b6b",
-  textLight: "#9b9b9b",
-  textPlaceholder: "#c4c4c4",
+  textDark: "#1D2B25", // Text primary
+  textBody: "#4A4740",
+  textMid: "#6A6560", // Text secondary
+  textLight: "#9A9590",
+  textSecondary: "#6A6560",
+  textPlaceholder: "#9A9590",
 
   // Borders
-  borderLight: "#e0d5cc",
-  borderMid: "#d9c5b2",
+  borderLight: "#E8E1D9", // Card border
+  borderMid: "#D1C8C0", // Input border
+  borderCard: "#E8E1D9",
+  borderInput: "#D1C8C0",
 
-  // Status
-  success: "#5b7d74",
-  warning: "#dda98b",
-  danger: "#c04040",
-  dangerLight: "#f0c4c4",
+  // Status (no pure red anywhere — danger is a warm clay)
+  success: "#4A9950",
+  warning: "#C17B28",
+  danger: "#9B3820",
+  dangerLight: "#F5E8E4",
+
+  // Accent
+  favouriteGold: "#C49B30",
 
   // Neutral
-  lightGrey: "#c4c4c4",
-  mist: "#dce5e1",
+  lightGrey: "#9A9590",
+  mist: "#EDECE9",
 
-  // Blues
-  skyLight: "#ddeef7",
-  skyText: "#2a5f7a",
+  // Blues (kept for older screens; retuned to brand)
+  skyLight: "#E7F4F0",
+  skyText: "#1E7158",
 };
 
+// Fonts
+// Headings: Poppins (loaded as weighted families so bold actually renders on Android).
+// Body: Atkinson Hyperlegible (chosen for neurodivergent readability).
+// `heading` and `body` are the names existing screens use.
 export const fonts = {
-  heading: "AtkinsonHyperlegible",
-  body: "Inter",
+  heading: "Poppins_600SemiBold",
+  headingBold: "Poppins_700Bold",
+  headingMedium: "Poppins_500Medium",
+  headingRegular: "Poppins_400Regular",
+  body: "AtkinsonHyperlegible",
+  bodyBold: "AtkinsonHyperlegible_Bold",
 };
 
+// Type scale (new brand)
 export const fontSizes = {
   xs: 11,
   sm: 12,
-  md: 14,
-  lg: 16,
-  xl: 18,
-  xxl: 20,
-  xxxl: 24,
+  md: 15,
+  lg: 18,
+  xl: 22,
+  xxl: 28,
+  xxxl: 34,
 };
 
+// Spacing scale (new brand)
 export const spacing = {
   xs: 4,
-  sm: 6,
-  md: 10,
-  lg: 12,
-  xl: 16,
-  xxl: 20,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 28,
+  xxxl: 32,
 };
 
+// Corner radius (new brand)
 export const radius = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 28,
-  full: 9999,
+  xl: 24,
+  full: 999,
 };
 
 export const modules = {
   mindfulness: {
     name: "Mindfulness",
     colour: colours.mindfulness,
-    cardColour: "#d6e8f5",
-    textColour: "#4a7a94",
+    cardColour: "#E7F4F0",
+    textColour: "#4A7B50",
     number: 1,
   },
   distressTolerance: {
     name: "Distress Tolerance",
     colour: colours.distressTolerance,
-    cardColour: "#fdefd8",
-    textColour: "#a05c35",
+    cardColour: "#E8F0F4",
+    textColour: "#3C6377",
     number: 2,
   },
   emotionRegulation: {
     name: "Emotion Regulation",
     colour: colours.emotionRegulation,
-    cardColour: "#f0ebf4",
-    textColour: "#7a5a7d",
+    cardColour: "#F5E8E2",
+    textColour: "#8F5340",
     number: 3,
   },
   interpersonal: {
     name: "Interpersonal Effectiveness",
     colour: colours.interpersonal,
-    cardColour: "#fdf6e3",
-    textColour: "#9a7c2a",
+    cardColour: "#F5E4DE",
+    textColour: "#8A3E27",
     number: 4,
   },
 };

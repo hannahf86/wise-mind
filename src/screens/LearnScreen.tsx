@@ -87,6 +87,7 @@ export default function LearnScreen() {
             lesson={selectedLesson}
             module={selectedModule}
             skillId={selectedLesson.skill_id}
+            lessonCount={11}
             onBack={() => setSelectedLesson(null)}
             onSaveForLater={(lessonId) => {
               setStartedLessons((prev) => new Set([...prev, lessonId]));
@@ -119,7 +120,7 @@ export default function LearnScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Active module — Mindfulness */}
-          <View style={[styles.activeModule, { backgroundColor: "#d6e8f5" }]}>
+          <View style={[styles.activeModule, { backgroundColor: colours.white }]}>
             <View style={styles.moduleHeader}>
               <View
                 style={[
@@ -130,7 +131,7 @@ export default function LearnScreen() {
                 <Ionicons name="leaf-outline" size={18} color={colours.white} />
               </View>
               <View>
-                <Text style={[styles.moduleTitle, { color: "#222" }]}>
+                <Text style={[styles.moduleTitle, { color: colours.textDark }]}>
                   Mindfulness
                 </Text>
                 <Text style={styles.moduleSub}>Module 1 of 4 · Active now</Text>
@@ -150,7 +151,9 @@ export default function LearnScreen() {
                   ]}
                 />
               </View>
-              <Text style={[styles.progressLabel, { color: "#4a7a94" }]}>
+              <Text
+                style={[styles.progressLabel, { color: colours.mindfulness }]}
+              >
                 {completedLessons.size} of 11
               </Text>
             </View>
@@ -376,21 +379,21 @@ const styles = StyleSheet.create({
     backgroundColor: colours.background,
   },
   header: {
-    backgroundColor: colours.teal,
+    backgroundColor: colours.background,
     paddingHorizontal: spacing.xl,
-    paddingTop: 52,
-    paddingBottom: spacing.lg,
+    paddingTop: 56,
+    paddingBottom: spacing.md,
   },
   headerTitle: {
-    fontFamily: fonts.heading,
+    fontFamily: fonts.headingBold,
     fontSize: fontSizes.xxl,
-    color: colours.white,
+    color: colours.textDark,
     fontWeight: "700",
   },
   headerSub: {
     fontFamily: fonts.body,
     fontSize: fontSizes.sm,
-    color: "rgba(255,255,255,0.8)",
+    color: colours.textSecondary,
     marginTop: 2,
   },
   scroll: {
@@ -402,8 +405,10 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   activeModule: {
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colours.borderCard,
   },
   moduleHeader: {
     flexDirection: "row",
@@ -438,7 +443,7 @@ const styles = StyleSheet.create({
   progressBg: {
     flex: 1,
     height: 6,
-    backgroundColor: "rgba(255,255,255,0.5)",
+    backgroundColor: colours.borderLight,
     borderRadius: 3,
   },
   progressFill: {
@@ -466,7 +471,7 @@ const styles = StyleSheet.create({
     borderColor: colours.borderLight,
   },
   lessonCompleted: {
-    backgroundColor: "#eef6fb",
+    backgroundColor: colours.softMint,
     borderColor: colours.mindfulness,
   },
   lessonActive: {

@@ -85,7 +85,7 @@ export default function ProfileScreen() {
             },
             {
               icon: "person-outline",
-              colour: colours.cardSkills,
+              colour: colours.forestDark,
               title: "Account",
               sub: "Password, email, sign out",
             },
@@ -127,29 +127,29 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* Danger zone */}
+        {/* Sign out */}
+        <TouchableOpacity
+          style={styles.signOutBtn}
+          onPress={async () => {
+            await supabase.auth.signOut();
+          }}
+        >
+          <Ionicons name="log-out-outline" size={18} color={colours.jade} />
+          <Text style={styles.signOutText}>Sign out</Text>
+        </TouchableOpacity>
+
+        {/* Delete account */}
         <TouchableOpacity style={styles.dangerRow}>
+          <View style={[styles.menuIcon, { backgroundColor: colours.danger }]}>
+            <Ionicons name="trash-outline" size={16} color={colours.white} />
+          </View>
           <View style={styles.dangerBody}>
-            {/* Sign out */}
-            <TouchableOpacity
-              style={styles.signOutBtn}
-              onPress={async () => {
-                await supabase.auth.signOut();
-              }}
-            >
-              <Ionicons name="log-out-outline" size={18} color={colours.teal} />
-              <Text style={styles.signOutText}>Sign out</Text>
-            </TouchableOpacity>
             <Text style={styles.dangerTitle}>Delete my account</Text>
             <Text style={styles.dangerSub}>
               Permanently removes all your data
             </Text>
           </View>
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color={colours.dangerLight}
-          />
+          <Ionicons name="chevron-forward" size={16} color={colours.danger} />
         </TouchableOpacity>
 
         <Text style={styles.versionNote}>
@@ -166,21 +166,21 @@ const styles = StyleSheet.create({
     backgroundColor: colours.background,
   },
   header: {
-    backgroundColor: colours.teal,
+    backgroundColor: colours.background,
     paddingHorizontal: spacing.xl,
-    paddingTop: 52,
-    paddingBottom: spacing.lg,
+    paddingTop: 56,
+    paddingBottom: spacing.md,
   },
   headerTitle: {
-    fontFamily: fonts.heading,
+    fontFamily: fonts.headingBold,
     fontSize: fontSizes.xxl,
-    color: colours.white,
+    color: colours.textDark,
     fontWeight: "700",
   },
   headerSub: {
     fontFamily: fonts.body,
     fontSize: fontSizes.sm,
-    color: "rgba(255,255,255,0.8)",
+    color: colours.textSecondary,
     marginTop: 2,
   },
   scroll: {
@@ -297,13 +297,13 @@ const styles = StyleSheet.create({
     backgroundColor: colours.teal,
   },
   dangerRow: {
-    backgroundColor: colours.white,
+    backgroundColor: colours.dangerLight,
     borderRadius: radius.md,
     padding: spacing.lg,
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: colours.dangerLight,
+    gap: spacing.md,
+    borderWidth: 0,
     minHeight: minTouchTarget,
   },
   dangerBody: {
@@ -330,18 +330,19 @@ const styles = StyleSheet.create({
   signOutBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md,
-    backgroundColor: colours.white,
-    borderRadius: radius.md,
+    justifyContent: "center",
+    gap: spacing.sm,
+    backgroundColor: colours.card,
+    borderRadius: radius.full,
     padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colours.teal,
+    borderWidth: 1.5,
+    borderColor: colours.jade,
     minHeight: minTouchTarget,
   },
   signOutText: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.md,
-    color: colours.teal,
+    color: colours.jade,
     fontWeight: "700",
   },
 });

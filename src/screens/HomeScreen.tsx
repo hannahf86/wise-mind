@@ -145,14 +145,14 @@ export default function HomeScreen() {
             <Ionicons
               name="notifications-outline"
               size={22}
-              color="rgba(255,255,255,0.9)"
+              color={colours.textDark}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerIcon}>
             <Ionicons
               name="settings-outline"
               size={22}
-              color="rgba(255,255,255,0.9)"
+              color={colours.textDark}
             />
           </TouchableOpacity>
         </View>
@@ -166,8 +166,8 @@ export default function HomeScreen() {
         {/* Learning path card */}
         <View style={[styles.card, { backgroundColor: colours.cardLearning }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="map-outline" size={14} color="#3d2d4a" />
-            <Text style={[styles.cardTitle, { color: "#3d2d4a" }]}>
+            <Ionicons name="map-outline" size={16} color={colours.textDark} />
+            <Text style={[styles.cardTitle, { color: colours.textDark }]}>
               Your learning path
             </Text>
           </View>
@@ -175,38 +175,37 @@ export default function HomeScreen() {
             <View
               style={[styles.lpIcon, { backgroundColor: colours.mindfulness }]}
             >
-              <Ionicons name="leaf-outline" size={14} color={colours.white} />
+              <Ionicons name="leaf-outline" size={16} color={colours.white} />
             </View>
             <View style={styles.lpBody}>
               <Text style={styles.lpName}>Mindfulness</Text>
-              <Text style={styles.lpSub}>Module 1 — everyone starts here</Text>
+              <Text style={styles.lpSub}>
+                Module 1 of 4 - everyone starts here
+              </Text>
               <View style={styles.lpBarBg}>
                 <View
                   style={[
                     styles.lpBar,
-                    { width: "1%", backgroundColor: colours.mindfulness },
+                    { width: "27%", backgroundColor: colours.mindfulness },
                   ]}
                 />
               </View>
             </View>
-            <TouchableOpacity style={styles.lpBadge} onPress={handleBegin}>
-              <Text
-                style={[styles.lpBadgeText, { color: colours.mindfulness }]}
-              >
-                Begin
-              </Text>
-            </TouchableOpacity>
           </View>
+          <TouchableOpacity style={styles.continueBtn} onPress={handleBegin}>
+            <Ionicons name="play" size={16} color={colours.white} />
+            <Text style={styles.continueBtnText}>Continue lesson</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Favourite skills card */}
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: colours.cardSkills }]}
+          style={[styles.card, styles.cardWhite]}
           onPress={() => navigation.navigate("Toolkit" as never)}
         >
           <View style={styles.cardTitleRow}>
-            <Ionicons name="star-outline" size={14} color="#2d5a52" />
-            <Text style={[styles.cardTitle, { color: "#2d5a52" }]}>
+            <Ionicons name="star" size={16} color={colours.favouriteGold} />
+            <Text style={[styles.cardTitle, { color: colours.textDark }]}>
               Favourite skills
             </Text>
           </View>
@@ -282,12 +281,8 @@ export default function HomeScreen() {
         {/* Mood card */}
         <View style={[styles.card, { backgroundColor: colours.cardMood }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="happy-outline"
-              size={14}
-              color={colours.peachText}
-            />
-            <Text style={[styles.cardTitle, { color: colours.peachText }]}>
+            <Ionicons name="happy-outline" size={16} color={colours.textDark} />
+            <Text style={[styles.cardTitle, { color: colours.textDark }]}>
               How are you feeling today?
             </Text>
           </View>
@@ -354,8 +349,8 @@ export default function HomeScreen() {
         {/* Community card */}
         <View style={[styles.card, { backgroundColor: colours.cardCommunity }]}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="people-outline" size={14} color="#6b3518" />
-            <Text style={[styles.cardTitle, { color: "#6b3518" }]}>
+            <Ionicons name="people-outline" size={16} color={colours.textDark} />
+            <Text style={[styles.cardTitle, { color: colours.textDark }]}>
               Community
             </Text>
           </View>
@@ -377,10 +372,10 @@ const styles = StyleSheet.create({
     backgroundColor: colours.background,
   },
   header: {
-    backgroundColor: colours.teal,
+    backgroundColor: colours.background,
     paddingHorizontal: spacing.xl,
-    paddingTop: 52,
-    paddingBottom: spacing.lg,
+    paddingTop: 56,
+    paddingBottom: spacing.md,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -391,28 +386,28 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colours.peach,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colours.jade,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.md,
-    color: colours.teal,
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.lg,
+    color: colours.white,
     fontWeight: "700",
   },
   greetingSub: {
     fontFamily: fonts.body,
     fontSize: fontSizes.sm,
-    color: "rgba(255,255,255,0.8)",
+    color: colours.textSecondary,
   },
   greetingName: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.lg,
-    color: colours.white,
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.xl,
+    color: colours.textDark,
     fontWeight: "700",
   },
   headerIcons: {
@@ -435,18 +430,40 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   card: {
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.xl,
+  },
+  cardWhite: {
+    backgroundColor: colours.card,
+    borderWidth: 1,
+    borderColor: colours.borderCard,
+  },
+  continueBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    backgroundColor: colours.jade,
+    borderRadius: radius.full,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+    minHeight: minTouchTarget,
+  },
+  continueBtnText: {
+    fontFamily: fonts.heading,
+    fontSize: fontSizes.md,
+    color: colours.white,
+    fontWeight: "700",
   },
   cardTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   cardTitle: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.md,
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.lg,
     fontWeight: "700",
   },
   lpItem: {

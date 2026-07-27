@@ -156,11 +156,7 @@ export default function ToolkitScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Toolkit</Text>
         <TouchableOpacity style={styles.sosBtn}>
-          <Ionicons
-            name="alert-circle-outline"
-            size={16}
-            color={colours.white}
-          />
+          <Ionicons name="alert-circle" size={16} color={colours.white} />
           <Text style={styles.sosBtnText}>SOS</Text>
         </TouchableOpacity>
       </View>
@@ -179,10 +175,10 @@ export default function ToolkitScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Favourite skills */}
-        <View style={[styles.section, { backgroundColor: colours.cardSkills }]}>
+        <View style={[styles.section, { backgroundColor: "transparent" }]}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="star-outline" size={13} color="#2d5a52" />
-            <Text style={[styles.sectionTitle, { color: "#2d5a52" }]}>
+            <Ionicons name="star" size={15} color={colours.favouriteGold} />
+            <Text style={[styles.sectionTitle, { color: colours.textDark }]}>
               Favourite skills
             </Text>
           </View>
@@ -225,14 +221,10 @@ export default function ToolkitScreen() {
           </ScrollView>
         </View>
         {/* Get out of that mood */}
-        <View style={[styles.section, { backgroundColor: colours.cardMood }]}>
+        <View style={[styles.section, { backgroundColor: "transparent" }]}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons
-              name="happy-outline"
-              size={13}
-              color={colours.peachText}
-            />
-            <Text style={[styles.sectionTitle, { color: colours.peachText }]}>
+            <Ionicons name="happy-outline" size={15} color={colours.textDark} />
+            <Text style={[styles.sectionTitle, { color: colours.textDark }]}>
               Get out of that mood
             </Text>
           </View>
@@ -294,19 +286,25 @@ export default function ToolkitScreen() {
         </View>
 
         {/* DBT Skills library */}
-        <View
-          style={[styles.section, { backgroundColor: colours.cardLearning }]}
-        >
+        <View style={[styles.section, { backgroundColor: "transparent" }]}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="library-outline" size={13} color="#3d2d4a" />
-            <Text style={[styles.sectionTitle, { color: "#3d2d4a" }]}>
+            <Ionicons
+              name="library-outline"
+              size={15}
+              color={colours.textDark}
+            />
+            <Text style={[styles.sectionTitle, { color: colours.textDark }]}>
               DBT skills library
             </Text>
           </View>
 
           {/* Locked overlay */}
           <View style={styles.libraryLocked}>
-            <Ionicons name="lock-closed-outline" size={28} color="#3d2d4a" />
+            <Ionicons
+              name="lock-closed-outline"
+              size={28}
+              color={colours.textSecondary}
+            />
             <Text style={styles.libraryLockedTitle}>
               Complete all lessons to unlock
             </Text>
@@ -432,30 +430,28 @@ const styles = StyleSheet.create({
     backgroundColor: colours.background,
   },
   header: {
-    backgroundColor: colours.teal,
+    backgroundColor: colours.background,
     paddingHorizontal: spacing.xl,
-    paddingTop: 52,
-    paddingBottom: spacing.lg,
+    paddingTop: 56,
+    paddingBottom: spacing.md,
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
     justifyContent: "space-between",
   },
   headerTitle: {
-    fontFamily: fonts.heading,
+    fontFamily: fonts.headingBold,
     fontSize: fontSizes.xxl,
-    color: colours.white,
+    color: colours.textDark,
     fontWeight: "700",
   },
   sosBtn: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    backgroundColor: colours.jade,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
     minHeight: minTouchTarget,
   },
   sosBtnText: {
@@ -487,17 +483,17 @@ const styles = StyleSheet.create({
   },
   section: {
     borderRadius: radius.md,
-    padding: spacing.lg,
+    padding: 0,
   },
   sectionTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontFamily: fonts.heading,
-    fontSize: fontSizes.md,
+    fontFamily: fonts.headingBold,
+    fontSize: fontSizes.lg,
     fontWeight: "700",
   },
   skillsScroll: {
@@ -550,8 +546,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     width: "47%",
     minHeight: minTouchTarget,
-    borderWidth: 0.5,
-    borderColor: colours.peachBorder,
+    borderWidth: 1,
+    borderColor: colours.borderCard,
   },
   moodItemIcon: {
     width: 28,
@@ -651,16 +647,18 @@ const styles = StyleSheet.create({
     color: colours.textMid,
   },
   libraryLocked: {
-    backgroundColor: "rgba(255,255,255,0.6)",
-    borderRadius: radius.sm,
+    backgroundColor: colours.canvas,
+    borderRadius: radius.lg,
     padding: spacing.xl,
     alignItems: "center",
     gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colours.borderCard,
   },
   libraryLockedTitle: {
-    fontFamily: fonts.heading,
+    fontFamily: fonts.headingBold,
     fontSize: fontSizes.lg,
-    color: "#3d2d4a",
+    color: colours.textDark,
     fontWeight: "700",
     textAlign: "center",
   },
