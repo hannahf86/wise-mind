@@ -5,6 +5,7 @@ import { colours, fonts, fontSizes } from "../theme/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { supabase } from "../services/supabase";
+import { useAuth } from "../services/AuthContext";
 
 // Screens
 import HomeScreen from "../screens/HomeScreen";
@@ -19,9 +20,7 @@ import OnboardingNavigator from "../screens/onboarding/OnboardingNavigator";
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
-  // const { session, loading } = useAuth(); // TODO: restore before beta
-  const session = true;
-  const loading = false;
+  const { session, loading } = useAuth();
 
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(
     null,
